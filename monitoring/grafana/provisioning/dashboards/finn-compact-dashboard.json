@@ -1,0 +1,297 @@
+{
+    "id": null,
+    "title": "Finn AI Agent - Compact Dashboard",
+    "tags": ["finn", "ai", "loan-analysis", "compact"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "SERVICE STATUS",
+        "type": "stat",
+        "description": "Health",
+        "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+        "targets": [{
+          "expr": "up{instance=\"backend:8000\"}",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [
+              {"type": "value", "options": {"1": "🟢 Online", "0": "🔴 Offline"}, "id": 1}
+            ],
+            "thresholds": {"mode": "absolute", "steps": [
+              {"value": null, "color": "red"},
+              {"value": 1, "color": "green"}
+            ]}
+          }
+        },
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "horizontal",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 2,
+        "title": "CPU USAGE",
+        "type": "gauge",
+        "description": "Gauge",
+        "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+        "targets": [{
+          "expr": "rate(process_cpu_seconds_total{job=\"backend\"}[5m]) * 100",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "color": {"mode": "thresholds"},
+            "thresholds": {"mode": "absolute", "steps": [
+              {"value": null, "color": "green"},
+              {"value": 70, "color": "yellow"},
+              {"value": 85, "color": "red"}
+            ]}
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "RAM USAGE",
+        "type": "gauge",
+        "description": "Gauge",
+        "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+        "targets": [{
+          "expr": "process_ram_usage_mb{service='backend'}",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 2000,
+            "color": {"mode": "thresholds"},
+            "thresholds": {"mode": "absolute", "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1200, "color": "yellow"},
+              {"value": 1600, "color": "red"}
+            ]}
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "DAILY VOLUME",
+        "type": "stat",
+        "description": "Big Number",
+        "gridPos": {"x": 0, "y": 4, "w": 4, "h": 4},
+        "targets": [{
+          "expr": "increase(analysis_total[24h])",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "displayMode": "color-background",
+              "alignment": "center"
+            }
+          }
+        },
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "horizontal",
+          "textMode": "value"
+        }
+      },
+      {
+        "id": 5,
+        "title": "SUCCESS RATE",
+        "type": "gauge",
+        "description": "Gauge",
+        "gridPos": {"x": 4, "y": 4, "w": 4, "h": 4},
+        "targets": [{
+          "expr": "sum(rate(analysis_success_total[1h])) / sum(rate(analysis_total[1h])) * 100",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "color": {"mode": "thresholds"},
+            "thresholds": {"mode": "absolute", "steps": [
+              {"value": null, "color": "red"},
+              {"value": 80, "color": "yellow"},
+              {"value": 95, "color": "green"}
+            ]}
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "AVG PROCESS TIME",
+        "type": "stat",
+        "description": "Trend",
+        "gridPos": {"x": 8, "y": 4, "w": 4, "h": 4},
+        "targets": [{
+          "expr": "rate(analysis_processing_time_seconds_sum[5m]) / rate(analysis_processing_time_seconds_count[5m])",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 2,
+            "color": {"mode": "continuous-BlPu"}
+          }
+        },
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "horizontal",
+          "textMode": "value"
+        }
+      },
+      {
+        "id": 7,
+        "title": "DECISIONS",
+        "type": "piechart",
+        "description": "Pie Chart",
+        "gridPos": {"x": 0, "y": 8, "w": 4, "h": 6},
+        "targets": [{
+          "expr": "sum by (decision) (rate(analysis_decision_total[1h]))",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "options": {
+          "pieType": "pie",
+          "reduceOptions": {"calcs": ["lastNotNull"]},
+          "legend": {
+            "displayMode": "list",
+            "placement": "right",
+            "calcs": []
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "RISK SCORES",
+        "type": "bargauge",
+        "description": "Histogram",
+        "gridPos": {"x": 4, "y": 8, "w": 4, "h": 6},
+        "targets": [{
+          "expr": "analysis_risk_score",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 10,
+            "color": {"mode": "continuous-BlPu"}
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "TOP ERRORS",
+        "type": "barchart",
+        "description": "Bar Chart",
+        "gridPos": {"x": 8, "y": 8, "w": 4, "h": 6},
+        "targets": [{
+          "expr": "topk(5, sum by (error_type) (rate(analysis_failure_total[1h])))",
+          "format": "time_series",
+          "refId": "A"
+        }],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 10,
+        "title": "PERFORMANCE TRENDS",
+        "type": "timeseries",
+        "description": "Time Series - 24h History",
+        "gridPos": {"x": 0, "y": 14, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "rate(request_count_total[5m])",
+            "legendFormat": "Request Rate (req/s)",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(analysis_failure_total[5m]) / rate(analysis_total[5m]) * 100",
+            "legendFormat": "Error Rate (%)",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(analysis_processing_time_seconds_bucket[5m]))",
+            "legendFormat": "p95 Latency (s)",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "barAlignment": 0,
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "spanNulls": false,
+              "showPoints": "auto",
+              "pointSize": 5,
+              "stacking": {
+                "mode": "none",
+                "group": "A"
+              },
+              "axisPlacement": "auto",
+              "axisLabel": "",
+              "axisColorMode": "text",
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "axisCenteredZero": false,
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": []
+          }
+        }
+      }
+    ],
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h"]
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 1,
+    "uid": "finn-compact-dashboard"
+  }

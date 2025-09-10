@@ -1,0 +1,358 @@
+{
+  "feedback_entries": [
+    {
+      "feedback_id": "fb_32145_1754043710.680158",
+      "loan_data": {
+        "loan_id": "32145",
+        "pdf_path": "PDF Loans/loan_assessment_32145_20250714_111825.pdf"
+      },
+      "original_analysis": {
+        "summary": "Comparative analysis summary highlighting meaningful patterns\nRECOMMENDATION: REVIEW\nDetailed Rationale:\n- The current risk score of Najwa bent abedallah Kaabechi is within the historical range but shows\na slight increase in 'aml_ppe' (31.0 vs 32-35), which may indicate an evolving credit profile or\nmarket conditions affecting her ability to pay back loans.\n- The debt-to-income ratio of Najwa is exactly at the historical median, suggesting that while she\nhas a similar financial burden compared to past cases, this metric alone does not provide enough\ninsight into changes in risk without considering other factors such as income stability and\nemployment status.\n- Historical patterns show consistency across 'aml_ppe' scores for reviewed customers; however,\nthe slight increase observed may warrant further investigation rather than immediate rejection\nof approval.\nRecommended Conditions:\n- {'special condition 1 with historical precedent': \"Given the slight increase observed in 'aml_ppe'\nscores, monitoring of Najwa\u2019s payment history and credit utilization over the next few months\ncould be beneficial to ensure that this is not an emerging risk.\", 'monitoring requirements':\n'Review her financial status quarterly or upon significant changes.'}\n- {'special condition 2 with monitoring requirements': \"Due to the lower loan amount, Najwa's\napproval could be contingent on a co-signer from among past approved customers who have\ndemonstrated strong credit behavior.\", 'historical precedent': 'In cases where borrowers had\nsimilar financial profiles but requested higher amounts in the future and exhibited riskier\npatterns.'}\nSimilar Historical Cases\nCase #1 (Similarity: 0.67)\nCustomer: Lamjed Choucheni\nLoan Amount: 18,000.00\nRisk Score: 42.0\nConfidential - Generated on 2025-07-14 11:18:25 Page 4/6\nDecision: REVIEW\nanalysis_type: contextual\namount: 18000\ntimestamp: 1748568520.90928\nprocessing_time: 78.08303213119507\nrisk_score: 42.0\ncustomer: Lamjed Choucheni\nCase #2 (Similarity: 0.65)\nCustomer: Rawdha Bent Abdelaziz KARMITI\nLoan Amount: 15,001.00\nRisk Score: 36.0\nDecision: REVIEW\nanalysis_type: contextual\namount: 15001.0\ncustomer: Rawdha Bent Abdelaziz KARMITI\nrisk_score: 36.0\ntimestamp: 1748893184.985964\nprocessing_time: 181.09008884429932\nCase #3 (Similarity: 0.64)\nCustomer: Zaineb Bent Elhedi Othmen\nLoan Amount: 16,301.43\nRisk Score: 31.0\nDecision: REVIEW\nprocessing_time: 73.311026096344\nanalysis_type: contextual\nrisk_score: 31.0\ncustomer: Zaineb Bent Elhedi Othmen\nConfidential - Generated on 2025-07-14 11:18:25 Page 5/6\ntimestamp: 1751977765.6738849\namount: 16301.43\nBranch Information\nBranch Name: AGENCE SILIANA\nBranch Description: AGENCE SILIANA\nLoan Officer: Mariem Krifi (Loan Officer)\nConfidential - Generated on 2025-07-14 11:18:25 Page 6/6",
+        "recommendation": "review",
+        "key_findings": [],
+        "conditions": [
+          "{'special condition 1 with historical precedent': \"Given the slight increase observed in 'aml_ppe'",
+          "scores, monitoring of Najwa\u2019s payment history and credit utilization over the next few months",
+          "could be beneficial to ensure that this is not an emerging risk.\", 'monitoring requirements':",
+          "'Review her financial status quarterly or upon significant changes.'}",
+          "{'special condition 2 with monitoring requirements': \"Due to the lower loan amount, Najwa's",
+          "approval could be contingent on a cosigner from among past approved customers who have",
+          "demonstrated strong credit behavior.\", 'historical precedent': 'In cases where borrowers had",
+          "similar financial profiles but requested higher amounts in the future and exhibited riskier",
+          "patterns.'}",
+          "Similar Historical Cases"
+        ]
+      },
+      "feedback": {
+        "loan_id": "32145",
+        "analyst_id": "human_1",
+        "agent_recommendation": "review",
+        "agent_confidence": 0.0,
+        "human_decision": "approve",
+        "feedback_rating": "5",
+        "feedback_comments": "this was perfect",
+        "timestamp": "2025-08-01T11:21:50.679642",
+        "metadata": {
+          "pdf_path": "PDF Loans/loan_assessment_32145_20250714_111825.pdf",
+          "summary": "Comparative analysis summary highlighting meaningful patterns\nRECOMMENDATION: REVIEW\nDetailed Rationale:\n- The current risk score of Najwa bent abedallah Kaabechi is within the historical range but shows\na slight increase in 'aml_ppe' (31.0 vs 32-35), which may indicate an evolving credit profile or\nmarket conditions affecting her ability to pay back loans.\n- The debt-to-income ratio of Najwa is exactly at the historical median, suggesting that while she\nhas a similar financial burden compared to past cases, this metric alone does not provide enough\ninsight into changes in risk without considering other factors such as income stability and\nemployment status.\n- Historical patterns show consistency across 'aml_ppe' scores for reviewed customers; however,\nthe slight increase observed may warrant further investigation rather than immediate rejection\nof approval.\nRecommended Conditions:\n- {'special condition 1 with historical precedent': \"Given the slight increase observed in 'aml_ppe'\nscores, monitoring of Najwa\u2019s payment history and credit utilization over the next few months\ncould be beneficial to ensure that this is not an emerging risk.\", 'monitoring requirements':\n'Review her financial status quarterly or upon significant changes.'}\n- {'special condition 2 with monitoring requirements': \"Due to the lower loan amount, Najwa's\napproval could be contingent on a co-signer from among past approved customers who have\ndemonstrated strong credit behavior.\", 'historical precedent': 'In cases where borrowers had\nsimilar financial profiles but requested higher amounts in the future and exhibited riskier\npatterns.'}\nSimilar Historical Cases\nCase #1 (Similarity: 0.67)\nCustomer: Lamjed Choucheni\nLoan Amount: 18,000.00\nRisk Score: 42.0\nConfidential - Generated on 2025-07-14 11:18:25 Page 4/6\nDecision: REVIEW\nanalysis_type: contextual\namount: 18000\ntimestamp: 1748568520.90928\nprocessing_time: 78.08303213119507\nrisk_score: 42.0\ncustomer: Lamjed Choucheni\nCase #2 (Similarity: 0.65)\nCustomer: Rawdha Bent Abdelaziz KARMITI\nLoan Amount: 15,001.00\nRisk Score: 36.0\nDecision: REVIEW\nanalysis_type: contextual\namount: 15001.0\ncustomer: Rawdha Bent Abdelaziz KARMITI\nrisk_score: 36.0\ntimestamp: 1748893184.985964\nprocessing_time: 181.09008884429932\nCase #3 (Similarity: 0.64)\nCustomer: Zaineb Bent Elhedi Othmen\nLoan Amount: 16,301.43\nRisk Score: 31.0\nDecision: REVIEW\nprocessing_time: 73.311026096344\nanalysis_type: contextual\nrisk_score: 31.0\ncustomer: Zaineb Bent Elhedi Othmen\nConfidential - Generated on 2025-07-14 11:18:25 Page 5/6\ntimestamp: 1751977765.6738849\namount: 16301.43\nBranch Information\nBranch Name: AGENCE SILIANA\nBranch Description: AGENCE SILIANA\nLoan Officer: Mariem Krifi (Loan Officer)\nConfidential - Generated on 2025-07-14 11:18:25 Page 6/6",
+          "recommendation": "review",
+          "num_findings": 0,
+          "num_conditions": 10
+        }
+      }
+    },
+    {
+      "feedback_id": "fb_33356_1754649163.324052",
+      "loan_data": {
+        "loan_id": "33356",
+        "pdf_path": "PDF Loans/loan_assessment_33356_20250808_104629.pdf"
+      },
+      "original_analysis": {
+        "summary": "The loan application presents a financial stability concern due to a close match between the\ncustomer's assets and loan amount, but with significant deviations in insurance coverage and\nfamily status.\nRECOMMENDATION: APPROVE\nDetailed Rationale:\n- Customer has assets value nearly equal to loan amount, suggesting potential financial strain if\nunvested.\n- Missing Udf Couverture Sociale indicates lack of insurance coverage, which could lead to\nunexpected financial losses.\n- Family status and married status may affect personal financial stability, especially in a Tunisian\ncontext.\nKey Findings:\n- Close match between assets value and loan amount suggesting potential financial strain.\n- Missing Udf Couverture Sociale indicating lack of insurance coverage.\n- Impact of family status on personal financial stability.\nRecommended Conditions:\n- Lack of insurance coverage affecting repayment ability.\n- Family status potentially impacting financial stability.\nSimilar Historical Cases\nCase #1 (Similarity: 0.76)\nCustomer: Mohamed amine ben Boudhiaf Garraoui\nLoan Amount: 20,000.00\nRisk Score: 47.0\nDecision: REVIEW\ncustomer: Mohamed amine ben Boudhiaf Garraoui\nanalysis_type: contextual\nConfidential - Generated on 2025-08-08 10:46:29 Page 4/6\namount: 20000.0\nprocessing_time: 101.17440009117126\ntimestamp: 1752489625.9466891\nrisk_score: 47.0\nCase #2 (Similarity: 0.67)\nCustomer: houssin ben maaoui dhahri\nLoan Amount: 10,000.00\nRisk Score: 47.0\nDecision: REVIEW\nprocessing_time: 60.77489113807678\nrisk_score: 47.0\namount: 10000.0\nanalysis_type: contextual\ncustomer: houssin ben maaoui dhahri\ntimestamp: 1752498276.9667358\nCase #3 (Similarity: 0.67)\nCustomer: houssin ben maaoui dhahri\nLoan Amount: 10,000.00\nRisk Score: 47.0\nDecision: REVIEW\ntimestamp: 1753103393.671341\nprocessing_time: 37.23731088638306\nrisk_score: 47.0\namount: 10000.0\ncustomer: houssin ben maaoui dhahri\nanalysis_type: contextual\nConfidential - Generated on 2025-08-08 10:46:29 Page 5/6\nBranch Information\nBranch Name: AGENCE NABEUL\nBranch Description: AGENCE NABEUL\nLoan Officer: Silene Ben Mansour (Loan Officer)\nConfidential - Generated on 2025-08-08 10:46:29 Page 6/6",
+        "recommendation": "approve",
+        "key_findings": [
+          "Close match between assets value and loan amount suggesting potential financial strain.",
+          "Missing Udf Couverture Sociale indicating lack of insurance coverage.",
+          "Impact of family status on personal financial stability.",
+          "Recommended Conditions:",
+          "Lack of insurance coverage affecting repayment ability.",
+          "Family status potentially impacting financial stability.",
+          "Similar Historical Cases",
+          "Case #1 (Similarity: 0.76)",
+          "Customer: Mohamed amine ben Boudhiaf Garraoui",
+          "Loan Amount: 20,000.00"
+        ],
+        "conditions": [
+          "Lack of insurance coverage affecting repayment ability.",
+          "Family status potentially impacting financial stability.",
+          "Similar Historical Cases",
+          "Case #1 (Similarity: 0.76)",
+          "Customer: Mohamed amine ben Boudhiaf Garraoui",
+          "Loan Amount: 20,000.00",
+          "Risk Score: 47.0",
+          "Decision: REVIEW",
+          "customer: Mohamed amine ben Boudhiaf Garraoui",
+          "analysis_type: contextual"
+        ]
+      },
+      "feedback": {
+        "loan_id": "33356",
+        "analyst_id": "human_1",
+        "agent_recommendation": "approve",
+        "agent_confidence": 0.0,
+        "human_decision": "approve",
+        "feedback_rating": "4",
+        "feedback_comments": "overall, it was good, but in recommened conditions, you should be more of a advice giving rather than just pointing at things, you can usee the loan 32145 for further reference",
+        "timestamp": "2025-08-08T11:32:43.323055",
+        "metadata": {
+          "pdf_path": "PDF Loans/loan_assessment_33356_20250808_104629.pdf",
+          "summary": "The loan application presents a financial stability concern due to a close match between the\ncustomer's assets and loan amount, but with significant deviations in insurance coverage and\nfamily status.\nRECOMMENDATION: APPROVE\nDetailed Rationale:\n- Customer has assets value nearly equal to loan amount, suggesting potential financial strain if\nunvested.\n- Missing Udf Couverture Sociale indicates lack of insurance coverage, which could lead to\nunexpected financial losses.\n- Family status and married status may affect personal financial stability, especially in a Tunisian\ncontext.\nKey Findings:\n- Close match between assets value and loan amount suggesting potential financial strain.\n- Missing Udf Couverture Sociale indicating lack of insurance coverage.\n- Impact of family status on personal financial stability.\nRecommended Conditions:\n- Lack of insurance coverage affecting repayment ability.\n- Family status potentially impacting financial stability.\nSimilar Historical Cases\nCase #1 (Similarity: 0.76)\nCustomer: Mohamed amine ben Boudhiaf Garraoui\nLoan Amount: 20,000.00\nRisk Score: 47.0\nDecision: REVIEW\ncustomer: Mohamed amine ben Boudhiaf Garraoui\nanalysis_type: contextual\nConfidential - Generated on 2025-08-08 10:46:29 Page 4/6\namount: 20000.0\nprocessing_time: 101.17440009117126\ntimestamp: 1752489625.9466891\nrisk_score: 47.0\nCase #2 (Similarity: 0.67)\nCustomer: houssin ben maaoui dhahri\nLoan Amount: 10,000.00\nRisk Score: 47.0\nDecision: REVIEW\nprocessing_time: 60.77489113807678\nrisk_score: 47.0\namount: 10000.0\nanalysis_type: contextual\ncustomer: houssin ben maaoui dhahri\ntimestamp: 1752498276.9667358\nCase #3 (Similarity: 0.67)\nCustomer: houssin ben maaoui dhahri\nLoan Amount: 10,000.00\nRisk Score: 47.0\nDecision: REVIEW\ntimestamp: 1753103393.671341\nprocessing_time: 37.23731088638306\nrisk_score: 47.0\namount: 10000.0\ncustomer: houssin ben maaoui dhahri\nanalysis_type: contextual\nConfidential - Generated on 2025-08-08 10:46:29 Page 5/6\nBranch Information\nBranch Name: AGENCE NABEUL\nBranch Description: AGENCE NABEUL\nLoan Officer: Silene Ben Mansour (Loan Officer)\nConfidential - Generated on 2025-08-08 10:46:29 Page 6/6",
+          "recommendation": "approve",
+          "num_findings": 10,
+          "num_conditions": 10
+        }
+      }
+    },
+    {
+      "feedback_id": "fb_33314_1754650015.074513",
+      "loan_data": {
+        "loan_id": "33314",
+        "pdf_path": "PDF Loans/loan_assessment_33314_20250808_114226.pdf"
+      },
+      "original_analysis": {
+        "summary": "The loan application presents several red flags, including inconsistent data, misaligned profile and\npurpose, gender mismatch, region mismatch, and a high UDF value which suggests significant risk.\nRECOMMENDATION: DENY\nDetailed Rationale:\n- Profile vs Purpose Mismatch: The loan purpose is 'Married couple' but the customer is single. This\nmisalignment raises concerns about creditworthiness in areas where the customer lacks\nexperience.\n- Data Inconsistencies: UDF values are inconsistent except for Aml Ppe, which is high. This\nsuggests significant risk factors that may not align with the customer's actual financial status.\n- Repayment Ability Concerns: The monthly payment seems reasonable given the loan amount\nand interest rate, but the gender mismatch could indicate a lack of creditworthiness in certain\nareas.\n- High UDF Value: Aml Ppe has a high value suggesting significant risk factors that may not align\nwith the customer's actual financial status.\nKey Findings:\n- Profile vs Purpose Mismatch\n- Data Inconsistencies (UDF values)\n- Repayment Ability Concerns\n- High UDF Value\nRecommended Conditions:\n- Profile vs Purpose Mismatch\n- Data Inconsistencies\n- Repayment Ability Concerns\n- High UDF Value\nBranch Information\nConfidential - Generated on 2025-08-08 11:42:26 Page 4/5\nBranch Name: AGENCE ZAGHOUAN-FAHS\nBranch Description: AGENCE ZAGHOUAN-FAHS\nLoan Officer: Kenzizi Rouba  (Loan Officer)\nConfidential - Generated on 2025-08-08 11:42:26 Page 5/5",
+        "recommendation": "deny",
+        "key_findings": [
+          "Profile vs Purpose Mismatch",
+          "Data Inconsistencies (UDF values)",
+          "Repayment Ability Concerns",
+          "High UDF Value",
+          "Recommended Conditions:",
+          "Profile vs Purpose Mismatch",
+          "Data Inconsistencies",
+          "Repayment Ability Concerns",
+          "High UDF Value",
+          "Branch Information"
+        ],
+        "conditions": [
+          "Profile vs Purpose Mismatch",
+          "Data Inconsistencies",
+          "Repayment Ability Concerns",
+          "High UDF Value",
+          "Branch Information",
+          "Confidential  Generated on 20250808 11:42:26 Page 4/5",
+          "Branch Name: AGENCE ZAGHOUANFAHS",
+          "Branch Description: AGENCE ZAGHOUANFAHS",
+          "Loan Officer: Kenzizi Rouba  (Loan Officer)",
+          "Confidential  Generated on 20250808 11:42:26 Page 5/5"
+        ]
+      },
+      "feedback": {
+        "loan_id": "33314",
+        "analyst_id": "human_1",
+        "agent_recommendation": "deny",
+        "agent_confidence": 0.0,
+        "human_decision": "deny",
+        "feedback_rating": "4",
+        "feedback_comments": "it was an amazing feedback, and good job finding those mismatches, one thing i will clarify, is there is no gender mismatches since she is a female actually, but besides that, everything is perfect, good job !",
+        "timestamp": "2025-08-08T11:46:55.073387",
+        "metadata": {
+          "pdf_path": "PDF Loans/loan_assessment_33314_20250808_114226.pdf",
+          "summary": "The loan application presents several red flags, including inconsistent data, misaligned profile and\npurpose, gender mismatch, region mismatch, and a high UDF value which suggests significant risk.\nRECOMMENDATION: DENY\nDetailed Rationale:\n- Profile vs Purpose Mismatch: The loan purpose is 'Married couple' but the customer is single. This\nmisalignment raises concerns about creditworthiness in areas where the customer lacks\nexperience.\n- Data Inconsistencies: UDF values are inconsistent except for Aml Ppe, which is high. This\nsuggests significant risk factors that may not align with the customer's actual financial status.\n- Repayment Ability Concerns: The monthly payment seems reasonable given the loan amount\nand interest rate, but the gender mismatch could indicate a lack of creditworthiness in certain\nareas.\n- High UDF Value: Aml Ppe has a high value suggesting significant risk factors that may not align\nwith the customer's actual financial status.\nKey Findings:\n- Profile vs Purpose Mismatch\n- Data Inconsistencies (UDF values)\n- Repayment Ability Concerns\n- High UDF Value\nRecommended Conditions:\n- Profile vs Purpose Mismatch\n- Data Inconsistencies\n- Repayment Ability Concerns\n- High UDF Value\nBranch Information\nConfidential - Generated on 2025-08-08 11:42:26 Page 4/5\nBranch Name: AGENCE ZAGHOUAN-FAHS\nBranch Description: AGENCE ZAGHOUAN-FAHS\nLoan Officer: Kenzizi Rouba  (Loan Officer)\nConfidential - Generated on 2025-08-08 11:42:26 Page 5/5",
+          "recommendation": "deny",
+          "num_findings": 10,
+          "num_conditions": 10
+        }
+      }
+    },
+    {
+      "feedback_id": "fb_33415_1755170501.081991",
+      "loan_data": {
+        "loan_id": "33415",
+        "pdf_path": "PDF Loans/loan_assessment_33415_20250814_120907.pdf"
+      },
+      "original_analysis": {
+        "summary": "The loan application has been analyzed for consistency and financial capacity. Key findings include\npotential overleveraging concerns, high interest rates, and a significant difference in the customer's\nprofession compared to historical cases.\nRECOMMENDATION: REVIEW\nDetailed Rationale:\n- The customer's profession is in industry, agriculture, and artisan, which may not directly\ncorrelate with past cases where professionals were denied due to high AML scores.\n- The loan amount of 6,000 TND is significantly lower than the assets value of 10,000 TND,\nindicating potential overleveraging concerns.\n- The interest rate of 30.25% and a term length of 18 months are higher than historical cases,\nsuggesting significant financial strain.\nKey Findings:\n- High interest rates (30.25%) and long-term loan duration (18 months) indicate potential\noverpayment risks.\n- Potential overleveraging concerns due to the difference between loan amount and assets value.\nRecommended Conditions:\n- The customer's profession may influence their financial capacity, but this is not a consistent\npattern across historical cases.\n- High interest rates and long-term loans are emerging factors that require careful evaluation.\nSimilar Historical Cases\nCase #1 (Similarity: 0.67)\nCustomer: afef bent elnnaser bouzaiene\nLoan Amount: 19,998.40\nRisk Score: 26.0\nDecision: DENY\nConfidential - Generated on 2025-08-14 12:09:07 Page 4/5\ncustomer: afef bent elnnaser bouzaiene\nprocessing_time: 91.2528681755066\nanalysis_type: contextual\nrisk_score: 26.0\ntimestamp: 1754649748.603439\nhas_feedback: False\namount: 19998.4\nBranch Information\nBranch Name: AGENCE KEBILI\nBranch Description: AGENCE KEBILI\nLoan Officer: Rania Khaldi (Loan Officer)\nConfidential - Generated on 2025-08-14 12:09:07 Page 5/5",
+        "recommendation": "review",
+        "key_findings": [
+          "High interest rates (30.25%) and longterm loan duration (18 months) indicate potential",
+          "overpayment risks.",
+          "Potential overleveraging concerns due to the difference between loan amount and assets value.",
+          "Recommended Conditions:",
+          "The customer's profession may influence their financial capacity, but this is not a consistent",
+          "pattern across historical cases.",
+          "High interest rates and longterm loans are emerging factors that require careful evaluation.",
+          "Similar Historical Cases",
+          "Case #1 (Similarity: 0.67)",
+          "Customer: afef bent elnnaser bouzaiene"
+        ],
+        "conditions": [
+          "The customer's profession may influence their financial capacity, but this is not a consistent",
+          "pattern across historical cases.",
+          "High interest rates and longterm loans are emerging factors that require careful evaluation.",
+          "Similar Historical Cases",
+          "Case #1 (Similarity: 0.67)",
+          "Customer: afef bent elnnaser bouzaiene",
+          "Loan Amount: 19,998.40",
+          "Risk Score: 26.0",
+          "Decision: DENY",
+          "Confidential  Generated on 20250814 12:09:07 Page 4/5"
+        ]
+      },
+      "feedback": {
+        "loan_id": "33415",
+        "analyst_id": "human_1",
+        "agent_recommendation": "review",
+        "agent_confidence": 0.0,
+        "human_decision": "approve",
+        "feedback_rating": "3",
+        "feedback_comments": "it was a good analysis, just one thing, you forgot the mismatch between marital status and family situation, one was S and one was Mari\u00e9",
+        "timestamp": "2025-08-14T12:21:41.081014",
+        "metadata": {
+          "pdf_path": "PDF Loans/loan_assessment_33415_20250814_120907.pdf",
+          "summary": "The loan application has been analyzed for consistency and financial capacity. Key findings include\npotential overleveraging concerns, high interest rates, and a significant difference in the customer's\nprofession compared to historical cases.\nRECOMMENDATION: REVIEW\nDetailed Rationale:\n- The customer's profession is in industry, agriculture, and artisan, which may not directly\ncorrelate with past cases where professionals were denied due to high AML scores.\n- The loan amount of 6,000 TND is significantly lower than the assets value of 10,000 TND,\nindicating potential overleveraging concerns.\n- The interest rate of 30.25% and a term length of 18 months are higher than historical cases,\nsuggesting significant financial strain.\nKey Findings:\n- High interest rates (30.25%) and long-term loan duration (18 months) indicate potential\noverpayment risks.\n- Potential overleveraging concerns due to the difference between loan amount and assets value.\nRecommended Conditions:\n- The customer's profession may influence their financial capacity, but this is not a consistent\npattern across historical cases.\n- High interest rates and long-term loans are emerging factors that require careful evaluation.\nSimilar Historical Cases\nCase #1 (Similarity: 0.67)\nCustomer: afef bent elnnaser bouzaiene\nLoan Amount: 19,998.40\nRisk Score: 26.0\nDecision: DENY\nConfidential - Generated on 2025-08-14 12:09:07 Page 4/5\ncustomer: afef bent elnnaser bouzaiene\nprocessing_time: 91.2528681755066\nanalysis_type: contextual\nrisk_score: 26.0\ntimestamp: 1754649748.603439\nhas_feedback: False\namount: 19998.4\nBranch Information\nBranch Name: AGENCE KEBILI\nBranch Description: AGENCE KEBILI\nLoan Officer: Rania Khaldi (Loan Officer)\nConfidential - Generated on 2025-08-14 12:09:07 Page 5/5",
+          "recommendation": "review",
+          "num_findings": 10,
+          "num_conditions": 10
+        }
+      }
+    },
+    {
+      "feedback_id": "fb_33415_1755172247.666291",
+      "loan_data": {
+        "loan_id": "33415",
+        "pdf_path": "PDF Loans/loan_assessment_33415_20250814_122308.pdf"
+      },
+      "original_analysis": {
+        "summary": "The loan application appears consistent in terms of data and profile but requires thorough review of\nfinancial capacity and risk factors.\nRECOMMENDATION: APPROVE\nDetailed Rationale:\n- The customer's national background aligns with historical cases, but the focus on Tunisian\nnationalities may not perfectly match previous trends.\n- Financial details show a reasonable loan amount ($6k) for the monthly payment of $3,111 over\n18 months.\n- Risk factors include hidden concerns like overleveraging and insufficient insurance coverage,\nwhich were present in similar cases that resulted in denial.\nKey Findings:\n- Overleveraged loan amount compared to monthly payments\n- Insufficient Udf Type Logement (yes) but the home is owned by the customer, indicating\npotential issues with property use and creditworthiness\nRecommended Conditions:\n- No specific condition identified for approval\n- Verification needed if reviewing\nSimilar Historical Cases\nCase #1 (Similarity: 0.67)\nCustomer: afef bent elnnaser bouzaiene\nLoan Amount: 19,998.40\nRisk Score: 26.0\nDecision: DENY\nrisk_score: 26.0\ncustomer: afef bent elnnaser bouzaiene\nConfidential - Generated on 2025-08-14 12:23:08 Page 4/5\nhas_feedback: False\nprocessing_time: 91.2528681755066\namount: 19998.4\nanalysis_type: contextual\ntimestamp: 1754649748.603439\nBranch Information\nBranch Name: AGENCE KEBILI\nBranch Description: AGENCE KEBILI\nLoan Officer: Rania Khaldi (Loan Officer)\nConfidential - Generated on 2025-08-14 12:23:08 Page 5/5",
+        "recommendation": "approve",
+        "key_findings": [
+          "Overleveraged loan amount compared to monthly payments",
+          "Insufficient Udf Type Logement (yes) but the home is owned by the customer, indicating",
+          "potential issues with property use and creditworthiness",
+          "Recommended Conditions:",
+          "No specific condition identified for approval",
+          "Verification needed if reviewing",
+          "Similar Historical Cases",
+          "Case #1 (Similarity: 0.67)",
+          "Customer: afef bent elnnaser bouzaiene",
+          "Loan Amount: 19,998.40"
+        ],
+        "conditions": [
+          "No specific condition identified for approval",
+          "Verification needed if reviewing",
+          "Similar Historical Cases",
+          "Case #1 (Similarity: 0.67)",
+          "Customer: afef bent elnnaser bouzaiene",
+          "Loan Amount: 19,998.40",
+          "Risk Score: 26.0",
+          "Decision: DENY",
+          "risk_score: 26.0",
+          "customer: afef bent elnnaser bouzaiene"
+        ]
+      },
+      "feedback": {
+        "loan_id": "33415",
+        "analyst_id": "human_1",
+        "agent_recommendation": "approve",
+        "agent_confidence": 0.0,
+        "human_decision": "approve",
+        "feedback_rating": "3",
+        "feedback_comments": "amazing, just one thing, there was a mismatch between maritalStatus which is S in the risk table, but family situation is set to Mari\u00e9, so this mismatch should be printed in the key findings next time, just overall, good analysis, but focus more on data mismatches next time",
+        "timestamp": "2025-08-14T12:50:47.665417",
+        "metadata": {
+          "pdf_path": "PDF Loans/loan_assessment_33415_20250814_122308.pdf",
+          "summary": "The loan application appears consistent in terms of data and profile but requires thorough review of\nfinancial capacity and risk factors.\nRECOMMENDATION: APPROVE\nDetailed Rationale:\n- The customer's national background aligns with historical cases, but the focus on Tunisian\nnationalities may not perfectly match previous trends.\n- Financial details show a reasonable loan amount ($6k) for the monthly payment of $3,111 over\n18 months.\n- Risk factors include hidden concerns like overleveraging and insufficient insurance coverage,\nwhich were present in similar cases that resulted in denial.\nKey Findings:\n- Overleveraged loan amount compared to monthly payments\n- Insufficient Udf Type Logement (yes) but the home is owned by the customer, indicating\npotential issues with property use and creditworthiness\nRecommended Conditions:\n- No specific condition identified for approval\n- Verification needed if reviewing\nSimilar Historical Cases\nCase #1 (Similarity: 0.67)\nCustomer: afef bent elnnaser bouzaiene\nLoan Amount: 19,998.40\nRisk Score: 26.0\nDecision: DENY\nrisk_score: 26.0\ncustomer: afef bent elnnaser bouzaiene\nConfidential - Generated on 2025-08-14 12:23:08 Page 4/5\nhas_feedback: False\nprocessing_time: 91.2528681755066\namount: 19998.4\nanalysis_type: contextual\ntimestamp: 1754649748.603439\nBranch Information\nBranch Name: AGENCE KEBILI\nBranch Description: AGENCE KEBILI\nLoan Officer: Rania Khaldi (Loan Officer)\nConfidential - Generated on 2025-08-14 12:23:08 Page 5/5",
+          "recommendation": "approve",
+          "num_findings": 10,
+          "num_conditions": 10
+        }
+      }
+    },
+    {
+      "feedback_id": "fb_33415_1755177155.298448",
+      "loan_id": "33415",
+      "feedback": {
+        "loan_id": "33415",
+        "analyst_id": "human_1",
+        "agent_recommendation": "approve",
+        "human_decision": "approve",
+        "rating": 4,
+        "comments": "amazing analysis overall, but you missed the mismatch between family situation and marital status, marital status was set to S which is sin\n \ngle, and then the family situation in the udf data was set to Mari\u00e9, so clearly they dont match, you should have brought it up, but nevertheless, good job, keep doing great work like this and thank you",
+        "timestamp": "2025-08-14T14:12:35.297690"
+      }
+    },
+    {
+      "feedback_id": "fb_33314_1755780146.450412",
+      "loan_id": "33314",
+      "feedback": {
+        "loan_id": "33314",
+        "analyst_id": "human_1",
+        "agent_recommendation": "deny",
+        "human_decision": "deny",
+        "rating": 4,
+        "comments": "this was a good analysis overall, good job ! ",
+        "timestamp": "2025-08-21T13:42:26.449286"
+      }
+    },
+    {
+      "feedback_id": "fb_32383_1755962462.615632",
+      "loan_id": "32383",
+      "feedback": {
+        "loan_id": "32383",
+        "analyst_id": "human_1",
+        "agent_recommendation": "review",
+        "human_decision": "review",
+        "rating": 4,
+        "comments": "it was good overall, good job !",
+        "timestamp": "2025-08-23T16:21:02.614937"
+      }
+    },
+    {
+      "feedback_id": "fb_31960_1755971949",
+      "loan_data": {
+        "loan_id": 31960,
+        "pdf_path": "PDF Loans/loan_assessment_31960_*.pdf"
+      },
+      "original_analysis": {
+        "summary": "Extracted from PDF analysis",
+        "recommendation": "approve",
+        "key_findings": [],
+        "conditions": []
+      },
+      "feedback": {
+        "loan_id": 31960,
+        "analyst_id": "web_user",
+        "agent_recommendation": "approve",
+        "human_decision": "approve",
+        "rating": 5,
+        "comments": "good overall, amazing job !",
+        "timestamp": "2025-08-23T18:59:09.824593"
+      }
+    },
+    {
+      "feedback_id": "fb_32145_1755985939",
+      "loan_data": {
+        "loan_id": 32145,
+        "pdf_path": "PDF Loans/loan_assessment_32145_*.pdf"
+      },
+      "original_analysis": {
+        "summary": "Extracted from PDF analysis",
+        "recommendation": "review",
+        "key_findings": [],
+        "conditions": []
+      },
+      "feedback": {
+        "loan_id": 32145,
+        "analyst_id": "web_user",
+        "agent_recommendation": "review",
+        "human_decision": "approve",
+        "rating": 4,
+        "comments": "There was a slight mismatch between MaritalStatus in the risk table which stated Married, and the family situation then stated divorced, please catch that next time, other wise good job overall !",
+        "timestamp": "2025-08-23T22:52:19.458758"
+      }
+    },
+    {
+      "feedback_id": "fb_32145_1756047142",
+      "loan_data": {
+        "loan_id": 32145,
+        "pdf_path": "PDF Loans/loan_assessment_32145_*.pdf"
+      },
+      "original_analysis": {
+        "summary": "Extracted from PDF analysis",
+        "recommendation": "review",
+        "key_findings": [],
+        "conditions": []
+      },
+      "feedback": {
+        "loan_id": 32145,
+        "analyst_id": "web_user",
+        "agent_recommendation": "review",
+        "human_decision": "approve",
+        "rating": 4,
+        "comments": "the analysis was good overall, but given the risk score it should be approve next time, but good job overall ! ",
+        "timestamp": "2025-08-24T15:52:22.294141"
+      }
+    }
+  ]
+}

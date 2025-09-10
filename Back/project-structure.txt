@@ -1,0 +1,173 @@
+.
+├── .DS_Store
+├── .env
+├── .vscode
+│   └── settings.json
+├── Backend
+│   ├── __pycache__
+│   │   ├── database.cpython-310.pyc
+│   │   ├── models.cpython-310.pyc
+│   │   └── schemas.cpython-310.pyc
+│   ├── database.py
+│   ├── models.py
+│   └── schemas.py
+├── Data
+│   ├── .DS_Store
+│   ├── KYC.LOV.csv
+│   ├── feedback_db.json
+│   ├── loan_analysis.db
+│   └── logs
+│       └── loan_processor.log
+├── Dockerfile
+├── Fonts
+│   ├── DejaVuMathTeXGyre.ttf
+│   ├── DejaVuSans-Bold.ttf
+│   ├── DejaVuSans-BoldOblique.ttf
+│   ├── DejaVuSans-ExtraLight.ttf
+│   ├── DejaVuSans-Oblique.ttf
+│   ├── DejaVuSans.ttf
+│   ├── DejaVuSansCondensed-Bold.ttf
+│   ├── DejaVuSansCondensed-BoldOblique.ttf
+│   ├── DejaVuSansCondensed-Oblique.ttf
+│   ├── DejaVuSansCondensed.ttf
+│   ├── DejaVuSansMono-Bold.ttf
+│   ├── DejaVuSansMono-BoldOblique.ttf
+│   ├── DejaVuSansMono-Oblique.ttf
+│   ├── DejaVuSansMono.ttf
+│   ├── DejaVuSerif-Bold.ttf
+│   ├── DejaVuSerif-BoldItalic.ttf
+│   ├── DejaVuSerif-Italic.ttf
+│   ├── DejaVuSerif.ttf
+│   ├── DejaVuSerifCondensed-Bold.ttf
+│   ├── DejaVuSerifCondensed-BoldItalic.ttf
+│   ├── DejaVuSerifCondensed-Italic.ttf
+│   ├── DejaVuSerifCondensed.ttf
+│   ├── NotoSans-Bold.ttf
+│   ├── NotoSans-BoldItalic.ttf
+│   ├── NotoSans-Italic.ttf
+│   └── NotoSans-Regular.ttf
+├── PDF Loans
+│   ├── loan_assessment.pdf
+│   ├── loan_assessment_20250530_022249.pdf
+│   ├── loan_assessment_20250530_022832.pdf
+│   ├── loan_assessment_20250530_025141.pdf
+│   ├── loan_assessment_20250530_101638.pdf
+│   ├── loan_assessment_20250602_015345.pdf
+│   ├── loan_assessment_20250602_024454.pdf
+│   ├── loan_assessment_20250602_040508.pdf
+│   ├── loan_assessment_20250602_201849.pdf
+│   ├── loan_assessment_20250602_203448.pdf
+│   ├── loan_assessment_20250602_203940.pdf
+│   ├── loan_assessment_20250602_205645.pdf
+│   ├── loan_assessment_20250603_104442.pdf
+│   ├── loan_assessment_20250603_111249.pdf
+│   ├── loan_assessment_20250603_112331.pdf
+│   ├── loan_assessment_20250605_135151.pdf
+│   ├── loan_assessment_20250613_143417.pdf
+│   ├── loan_assessment_20250616_143232.pdf
+│   ├── loan_assessment_20250616_145815.pdf
+│   ├── loan_assessment_20250616_151527.pdf
+│   ├── loan_assessment_20250616_151832.pdf
+│   ├── loan_assessment_20250617_223633.pdf
+│   ├── loan_assessment_20250617_224048.pdf
+│   ├── loan_assessment_20250617_224308.pdf
+│   ├── loan_assessment_20250618_210150.pdf
+│   ├── loan_assessment_20250619_134009.pdf
+│   ├── loan_assessment_20250622_161346.pdf
+│   ├── loan_assessment_20250623_121547.pdf
+│   ├── loan_assessment_20250623_122940.pdf
+│   ├── loan_assessment_20250623_124344.pdf
+│   ├── loan_assessment_20250623_153825.pdf
+│   ├── loan_assessment_31748_20250714_134712.pdf
+│   ├── loan_assessment_31827_20250708_130417.pdf
+│   ├── loan_assessment_31960_20250714_115624.pdf
+│   ├── loan_assessment_32145_20250714_111825.pdf
+│   ├── loan_assessment_32383_20250724_103425.pdf
+│   ├── loan_assessment_32383_20250724_104023.pdf
+│   ├── loan_assessment_32383_20250801_104606.pdf
+│   ├── loan_assessment_32383_20250801_120602.pdf
+│   ├── loan_assessment_33314_20250808_114226.pdf
+│   ├── loan_assessment_33356_20250808_104629.pdf
+│   ├── loan_assessment_33415_20250814_122308.pdf
+│   ├── loan_assessment_33415_20250814_141446.pdf
+│   └── loan_assessment_33415_20250820_104431.pdf
+├── __pycache__
+│   └── main.cpython-310.pyc
+├── analyse.py
+├── feedback_cli.py
+├── loan_analysis.db
+├── loans_vector.db
+│   ├── 53940b11-e4ca-48fd-9ba8-667ebc483f5f
+│   │   ├── data_level0.bin
+│   │   ├── header.bin
+│   │   ├── length.bin
+│   │   └── link_lists.bin
+│   ├── ae91671b-2310-4be3-bde2-8124774b09cb
+│   │   ├── data_level0.bin
+│   │   ├── header.bin
+│   │   ├── length.bin
+│   │   └── link_lists.bin
+│   └── chroma.sqlite3
+├── main.py
+├── migrate_data.py
+├── migrate_feedback_db.py
+├── project-structure.txt
+├── requirements.txt
+└── src
+    ├── .DS_Store
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── __init__.cpython-310.pyc
+    │   ├── __init__.cpython-312.pyc
+    │   ├── api_client.cpython-310.pyc
+    │   ├── api_client.cpython-312.pyc
+    │   ├── config.cpython-310.pyc
+    │   ├── config.cpython-312.pyc
+    │   ├── data_loader.cpython-310.pyc
+    │   ├── data_loader.cpython-312.pyc
+    │   ├── data_models.cpython-310.pyc
+    │   ├── data_models.cpython-312.pyc
+    │   └── utils.cpython-310.pyc
+    ├── api_client.py
+    ├── config.py
+    ├── data_loader.py
+    ├── data_models.py
+    ├── llm
+    │   ├── __init__.py
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-310.pyc
+    │   │   ├── __init__.cpython-312.pyc
+    │   │   ├── analyzer.cpython-310.pyc
+    │   │   ├── analyzer.cpython-312.pyc
+    │   │   ├── feedback.cpython-310.pyc
+    │   │   ├── prompts.cpython-310.pyc
+    │   │   └── vector_db.cpython-310.pyc
+    │   ├── analyzer.py
+    │   ├── feedback.py
+    │   ├── prompts.py
+    │   └── vector_db.py
+    ├── reporting
+    │   ├── __init__.py
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-310.pyc
+    │   │   ├── pdf.cpython-310.pyc
+    │   │   └── templates.cpython-310.pyc
+    │   ├── pdf.py
+    │   └── templates.py
+    ├── risk_engine
+    │   ├── __init__.py
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-310.pyc
+    │   │   ├── __init__.cpython-312.pyc
+    │   │   ├── base.cpython-310.pyc
+    │   │   ├── base.cpython-312.pyc
+    │   │   ├── business_rules.cpython-310.pyc
+    │   │   ├── business_rules.cpython-312.pyc
+    │   │   ├── scoring.cpython-310.pyc
+    │   │   └── scoring.cpython-312.pyc
+    │   ├── base.py
+    │   ├── business_rules.py
+    │   └── scoring.py
+    └── utils.py
+
+21 directories, 150 files

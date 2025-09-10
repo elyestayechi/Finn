@@ -1,0 +1,94 @@
+Category,Item,Weight
+Forme Juridique du B.EFFECTIF,SA,0
+Forme Juridique du B.EFFECTIF,SUARL,0
+Forme Juridique du B.EFFECTIF,SARL,0
+Forme Juridique du B.EFFECTIF,Société Personne Physique,2
+Forme Juridique du B.EFFECTIF,ONG,5
+Forme Juridique du B.EFFECTIF,Autres,5
+Raison de financement,Matériels et Equipements,0
+Raison de financement,Moyens de transport,15
+Raison de financement,Marchandises,0
+Raison de financement,Produits agricoles,7.5
+Raison de financement,Produits d'élevage,10
+Raison de financement,Rénovation et amenagement,2.5
+Raison de financement,Services,2.5
+Genre,M,2
+Genre,F,1
+Situation familiale,Veuf,1
+Situation familiale,Marié,0
+Situation familiale,Célibataire,5
+Situation familiale,Divorcé,2
+Catégorie de l'activité,Personne morale,1
+Catégorie de l'activité,Personne Physique,3
+Produit,Aouda Madrassiy,0
+Produit,CV_Arboricultur,0
+Produit,CV_Bovine,0
+Produit,CV_Culture Mara,0
+Produit,CV_Grande Cultu,2.5
+Produit,CV_Ovine,5
+Produit,Eco Panneau,0
+Produit,Equip Frigorifi,5
+Produit,Herfeti,2.5
+Produit,Karhabti,10
+Produit,Maktabati,0
+Produit,Mechiati,5
+Produit,Peinture de bat,0
+Produit,Produit Agricol,2.5
+Produit,Taamir,0
+Produit,Tabrid,0
+Produit,Tafawouak,0
+Produit,Tarmim,0
+Produit,Tijarati,5
+Produit,Tok tok,5
+Produit,Ziraati,7.5
+Région,ARIANA,10
+Région,BEJA,5
+Région,BEN AROUS,10
+Région,BIZERTE,10
+Région,GABES,15
+Région,GAFSA,20
+Région,JENDOUBA,20
+Région,KAIROUAN,10
+Région,KASSERINE,20
+Région,KEBILI,10
+Région,LE KEF,20
+Région,MAHDIA,15
+Région,MANOUBA,10
+Région,MEDENINE,15
+Région,MONASTIR,5
+Région,NABEUL,5
+Région,SFAX,15
+Région,SIDI BOUZID,15
+Région,SILIANA,5
+Région,SOUSSE,10
+Région,TATAOUINE,5
+Région,TOZEUR,10
+Région,TUNIS,5
+Région,ZAGHOUAN,5
+Résident,Oui,1
+Résident,Non,3
+Patenté,Oui,0
+Patenté,Non,2
+Type d'activité,Formel,1
+Type d'activité,Informel,2
+BENEFICIAIRE EFFECTIF,Oui,0
+BENEFICIAIRE EFFECTIF,Non,2
+Secteur d'activité,Agriculture,5
+Secteur d'activité,Amelioration du logement,3
+Secteur d'activité,Artisanat,3
+Secteur d'activité,Autres ACV,3
+Secteur d'activité,Commerce,4
+Secteur d'activité,Education,0
+Secteur d'activité,Elevage,7
+Secteur d'activité,Pêche,10
+Secteur d'activité,Production,4
+Secteur d'activité,Services,5
+Niveau d'étude,Analphabète,5
+Niveau d'étude,Primaire,3
+Niveau d'étude,Secondaire,1
+Niveau d'étude,Supérieur,0
+Type de logement,Propriétaire,0
+Type de logement,Locataire,5
+Type de logement,Logé gratuitement,5
+Couverture sociale,Oui,0
+Couverture sociale,Non,2

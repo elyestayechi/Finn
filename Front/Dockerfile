@@ -2,6 +2,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+ARG BUILD_ID=latest
+
 # Copy package files first for better caching
 COPY package*.json .
 COPY pnpm-lock.yaml .

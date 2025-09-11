@@ -101,10 +101,26 @@ services:
     restart: unless-stopped
     depends_on:
       - prometheus
-  
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    ports:
+      - "9190:8080"  
+      - "9191:50000"  
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins/scripts:/var/jenkins_scripts
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    restart: unless-stopped
+    user: root
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   ollama_data:
   prometheus_data:
   grafana_data:
-  
+  jenkins_data:

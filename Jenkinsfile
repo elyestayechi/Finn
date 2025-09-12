@@ -27,57 +27,45 @@ pipeline {
         }
         
         stage('Run Unit Tests') {
-    steps {
-        dir('Back') {
-            // Build test image
-            sh 'docker build -t finn-loan-analysis-backend-test -f Dockerfile.test .'
-            
-            // Clean previous test results and create directories
-            sh '''
-            rm -rf test-results coverage || true
-            mkdir -p test-results coverage
-            '''
-            
-            // Debug: Check what's in the tests directory
-            sh 'ls -la tests/ || true'
-            sh 'find tests/ -name "*.py" | head -10 || true'
-            
-            // Run tests with debug output
-            sh '''
-            echo "Current directory: $(pwd)"
-            echo "Workspace: ${WORKSPACE}"
-            
-            # Run tests with detailed output
-            docker run --rm \
-                -v "$(pwd)/test-results:/app/test-results" \
-                -v "$(pwd)/coverage:/app/coverage" \
-                -v "$(pwd)/tests:/app/tests" \
-                -v "$(pwd)/src:/app/src" \
-                finn-loan-analysis-backend-test \
-                sh -c '
-                echo "Contents of /app:"
-                ls -la /app/
-                echo "Contents of /app/tests:"
-                ls -la /app/tests/
-                echo "Running tests..."
-                python -m pytest /app/tests/ -v \
-                    --junitxml=/app/test-results/test-results.xml \
-                    --cov=/app/src \
-                    --cov-report=xml:/app/coverage/coverage.xml
-                '
-            '''
-            
-            // Check if files were created
-            sh 'ls -la test-results/ coverage/ || true'
-            sh 'find test-results/ -name "*.xml" || true'
-            sh 'find coverage/ -name "*.xml" || true'
+            steps {
+                dir('Back') {
+                    // Build test image
+                    sh 'docker build -t finn-loan-analysis-backend-test -f Dockerfile.test .'
+                    
+                    // Clean previous test results and create directories
+                    sh '''
+                    rm -rf test-results coverage || true
+                    mkdir -p test-results coverage
+                    chmod 777 test-results coverage  # Ensure write permissions
+                    '''
+                    
+                    // Run tests using the Dockerfile CMD
+                    sh '''
+                    echo "Running tests with Docker CMD..."
+                    
+                    docker run --rm \
+                        -v "$(pwd)/test-results:/app/test-results" \
+                        -v "$(pwd)/coverage:/app/coverage" \
+                        finn-loan-analysis-backend-test
+                    '''
+                    
+                    // Debug: Check what was created
+                    sh '''
+                    echo "=== Test results directory ==="
+                    ls -la test-results/
+                    echo "=== Coverage directory ==="
+                    ls -la coverage/
+                    echo "=== File contents ==="
+                    cat test-results/test-results.xml 2>/dev/null | head -3 || echo "No test results file"
+                    cat coverage/coverage.xml 2>/dev/null | head -3 || echo "No coverage file"
+                    '''
+                }
+            }
         }
-    }
-}
         
         stage('Deploy') {
             steps {
-                // Use docker compose (modern syntax)
+                // Use docker compose
                 sh 'docker compose up -d --build'
                 sleep(time: 30, unit: 'SECONDS')
             }
@@ -99,37 +87,62 @@ pipeline {
     post {
         always {
             script {
-                // Debug: Check what files were created
-                sh 'ls -la Back/test-results/ || true'
-                sh 'ls -la Back/coverage/ || true'
+                // Debug: Show directory structure
+                sh '''
+                echo "=== Workspace structure ==="
+                pwd
+                ls -la
+                echo "=== Back directory ==="
+                ls -la Back/
+                '''
                 
-                // Archive test results from the correct locations
-                def testResultsFile = "Back/test-results/test-results.xml"
-                def coverageFile = "Back/coverage/coverage.xml"
+                // Check for test results in multiple possible locations
+                def possibleTestPaths = [
+                    "Back/test-results/test-results.xml",
+                    "test-results/test-results.xml"
+                ]
                 
-                if (fileExists(testResultsFile)) {
-                    junit testResultsFile
-                    echo "✓ Test results archived successfully"
-                } else {
-                    echo "⚠️ Test results file not found at ${testResultsFile}"
-                    // Try to find the file anywhere
-                    sh 'find . -name "test-results.xml" -type f | head -5 || true'
+                def testResultsFound = false
+                for (path in possibleTestPaths) {
+                    if (fileExists(path)) {
+                        junit path
+                        echo "✓ Test results archived from: ${path}"
+                        testResultsFound = true
+                        break
+                    }
                 }
                 
-                if (fileExists(coverageFile)) {
-                    archiveArtifacts artifacts: coverageFile, fingerprint: true
-                    echo "✓ Coverage results archived successfully"
-                } else {
-                    echo "⚠️ Coverage file not found at ${coverageFile}"
-                    // Try to find the file anywhere
-                    sh 'find . -name "coverage.xml" -type f | head -5 || true'
+                if (!testResultsFound) {
+                    echo "⚠️ Test results file not found in expected locations"
+                    sh 'find . -name "test-results.xml" -type f 2>/dev/null | head -5 || true'
+                }
+                
+                // Check for coverage in multiple possible locations
+                def possibleCoveragePaths = [
+                    "Back/coverage/coverage.xml",
+                    "coverage/coverage.xml"
+                ]
+                
+                def coverageFound = false
+                for (path in possibleCoveragePaths) {
+                    if (fileExists(path)) {
+                        archiveArtifacts artifacts: path, fingerprint: true
+                        echo "✓ Coverage archived from: ${path}"
+                        coverageFound = true
+                        break
+                    }
+                }
+                
+                if (!coverageFound) {
+                    echo "⚠️ Coverage file not found in expected locations"
+                    sh 'find . -name "coverage.xml" -type f 2>/dev/null | head -5 || true'
                 }
             }
             
-            // Cleanup using docker compose
-            sh 'docker compose logs --no-color > docker-logs.txt || true'
+            // Cleanup
+            sh 'docker compose logs --no-color > docker-logs.txt 2>/dev/null || true'
             archiveArtifacts artifacts: 'docker-logs.txt', fingerprint: true
-            sh 'docker compose down || true'
+            sh 'docker compose down 2>/dev/null || true'
             sh 'docker system prune -f || true'
         }
         success {

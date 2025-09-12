@@ -19,6 +19,7 @@ services:
     build:
       context: ./Back
       dockerfile: Dockerfile
+    image: finn-loan-analysis-backend  # Match the built image name
     ports:
       - "8000:8000"
     volumes:
@@ -34,21 +35,12 @@ services:
       ollama:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    labels:
-      - "prometheus-job=backend"
-      - "prometheus-port=8000"
-      - "prometheus-path=/metrics"
 
   frontend:
     build:
       context: ./Front
       dockerfile: Dockerfile
+    image: finn-loan-analysis-frontend  # Match the built image name
     ports:
       - "3000:3000"
     depends_on:
@@ -56,24 +48,6 @@ services:
     environment:
       - VITE_API_BASE_URL=http://backend:8000
     restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    restart: unless-stopped
-    depends_on:
-      - backend
 
   grafana:
     image: grafana/grafana:latest

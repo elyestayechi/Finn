@@ -20,3 +20,10 @@ python-multipart
 prometheus-client
 prometheus-fastapi-instrumentator
 psutil
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+responses
+freezegun

@@ -2,8 +2,6 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-ARG BUILD_ID=latest
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -27,6 +25,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# FIXED: Use the correct module path
+# Set Python path and start command
 ENV PYTHONPATH=/app
 CMD python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2

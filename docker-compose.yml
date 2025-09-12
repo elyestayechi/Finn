@@ -103,7 +103,7 @@ services:
       - prometheus
 
   jenkins:
-    image: jenkins/jenkins:lts-jdk17
+    build: ./jenkins  # Use custom Dockerfile
     ports:
       - "9190:8080"  
       - "9191:50000"  
@@ -115,9 +115,7 @@ services:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
     restart: unless-stopped
     user: root
-    depends_on:
-      - backend
-      - frontend
+    privileged: true
 
 volumes:
   ollama_data:

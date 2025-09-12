@@ -71,6 +71,8 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        # Wait for services to start
+                        sleep 10
                         curl -f http://localhost:8000/health || echo "Backend health check failed"
                         curl -f http://localhost:3000 || echo "Frontend health check failed"
                     '''
@@ -81,9 +83,19 @@ pipeline {
     
     post {
         always {
+            // Cleanup
+            sh 'docker-compose down || true'
             sh 'docker system prune -f || true'
             sh 'docker-compose logs --no-color > docker-logs.txt || true'
             archiveArtifacts artifacts: 'docker-logs.txt'
+        }
+        
+        success {
+            echo 'Pipeline completed successfully! 🎉'
+        }
+        
+        failure {
+            echo 'Pipeline failed! ❌'
         }
     }
 }

@@ -27,31 +27,53 @@ pipeline {
         }
         
         stage('Run Unit Tests') {
-            steps {
-                dir('Back') {
-                    // Build test image
-                    sh 'docker build -t finn-loan-analysis-backend-test -f Dockerfile.test .'
-                    
-                    // Clean previous test results and create directories
-                    sh '''
-                    rm -rf test-results coverage || true
-                    mkdir -p test-results coverage
-                    '''
-                    
-                    // Run tests with volume mounting to avoid space issues
-                    sh '''
-                    docker run --rm \
-                        -v "$(pwd)/test-results:/app/test-results" \
-                        -v "$(pwd)/coverage:/app/coverage" \
-                        finn-loan-analysis-backend-test \
-                        python -m pytest tests/ -v \
-                        --junitxml=/app/test-results/test-results.xml \
-                        --cov=src \
-                        --cov-report=xml:/app/coverage/coverage.xml
-                    '''
-                }
-            }
+    steps {
+        dir('Back') {
+            // Build test image
+            sh 'docker build -t finn-loan-analysis-backend-test -f Dockerfile.test .'
+            
+            // Clean previous test results and create directories
+            sh '''
+            rm -rf test-results coverage || true
+            mkdir -p test-results coverage
+            '''
+            
+            // Debug: Check what's in the tests directory
+            sh 'ls -la tests/ || true'
+            sh 'find tests/ -name "*.py" | head -10 || true'
+            
+            // Run tests with debug output
+            sh '''
+            echo "Current directory: $(pwd)"
+            echo "Workspace: ${WORKSPACE}"
+            
+            # Run tests with detailed output
+            docker run --rm \
+                -v "$(pwd)/test-results:/app/test-results" \
+                -v "$(pwd)/coverage:/app/coverage" \
+                -v "$(pwd)/tests:/app/tests" \
+                -v "$(pwd)/src:/app/src" \
+                finn-loan-analysis-backend-test \
+                sh -c '
+                echo "Contents of /app:"
+                ls -la /app/
+                echo "Contents of /app/tests:"
+                ls -la /app/tests/
+                echo "Running tests..."
+                python -m pytest /app/tests/ -v \
+                    --junitxml=/app/test-results/test-results.xml \
+                    --cov=/app/src \
+                    --cov-report=xml:/app/coverage/coverage.xml
+                '
+            '''
+            
+            // Check if files were created
+            sh 'ls -la test-results/ coverage/ || true'
+            sh 'find test-results/ -name "*.xml" || true'
+            sh 'find coverage/ -name "*.xml" || true'
         }
+    }
+}
         
         stage('Deploy') {
             steps {

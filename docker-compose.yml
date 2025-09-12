@@ -19,7 +19,7 @@ services:
     build:
       context: ./Back
       dockerfile: Dockerfile
-    image: finn-loan-analysis-backend  # Match the built image name
+    image: finn-loan-analysis-backend
     ports:
       - "8000:8000"
     volumes:
@@ -40,7 +40,7 @@ services:
     build:
       context: ./Front
       dockerfile: Dockerfile
-    image: finn-loan-analysis-frontend  # Match the built image name
+    image: finn-loan-analysis-frontend
     ports:
       - "3000:3000"
     depends_on:
@@ -48,6 +48,24 @@ services:
     environment:
       - VITE_API_BASE_URL=http://backend:8000
     restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    depends_on:
+      - backend
 
   grafana:
     image: grafana/grafana:latest
@@ -77,10 +95,12 @@ services:
       - prometheus
 
   jenkins:
-    build: ./jenkins  # Use custom Dockerfile
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
     ports:
-      - "9190:8080"  
-      - "9191:50000"  
+      - "9190:8080"
+      - "9191:50000"
     volumes:
       - jenkins_data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock

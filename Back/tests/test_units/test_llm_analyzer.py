@@ -2,6 +2,32 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from src.llm import LLMAnalyzer
 
+@pytest.fixture
+def mock_loan_data():
+    return {
+        "customer_info": {
+            "name": "John Doe",
+            "id": "CUST001",
+            "type": "SA",
+            "demographics": {
+                "gender": "M",
+                "marital_status": "marié",
+                "age": "45"
+            }
+        },
+        "loan_info": {
+            "financials": {
+                "loan_amount": 50000,
+                "personal_contribution": 10000,
+                "currency": "TND"
+            }
+        },
+        "risk_assessment": {
+            "total_score": 15.0,
+            "indicators": {}
+        }
+    }
+
 @pytest.mark.asyncio
 async def test_llm_analyzer_initialization():
     """Test LLM analyzer initialization"""

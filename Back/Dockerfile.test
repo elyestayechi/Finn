@@ -21,10 +21,13 @@ RUN pip install pytest pytest-asyncio pytest-cov responses freezegun
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p Data/logs PDF\ Loans tests test-results
+RUN mkdir -p Data/logs PDF\ Loans test-results coverage
 
 # Set Python path
 ENV PYTHONPATH=/app
 
 # Default command to run tests
-CMD ["python", "-m", "pytest", "tests/", "-v", "--junitxml=/app/test-results/test-results.xml", "--cov=src", "--cov-report=xml:/app/test-results/coverage.xml"]
+CMD ["python", "-m", "pytest", "tests/", "-v", \
+     "--junitxml=/app/test-results/test-results.xml", \
+     "--cov=src", \
+     "--cov-report=xml:/app/coverage/coverage.xml"]

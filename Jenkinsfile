@@ -1,101 +1,109 @@
 pipeline {
     agent any
     environment {
-        PROJECT_NAME = 'finn-loan-analysis'
         DOCKER_HOST = 'unix:///var/run/docker.sock'
     }
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
-                sh 'git branch'
-                sh 'git log -1 --oneline'
+                git branch: 'main', url: 'https://github.com/elyestayechi/Finn.git'
             }
         }
         
         stage('Build Backend') {
             steps {
-                sh """
-                    cd Back
-                    docker build -t ${PROJECT_NAME}-backend:latest .
-                """
+                dir('Back') {
+                    sh 'docker build -t finn-loan-analysis-backend -f Dockerfile .'
+                }
             }
         }
         
         stage('Build Frontend') {
             steps {
-                sh """
-                    cd Front  
-                    docker build -t ${PROJECT_NAME}-frontend:latest .
-                """
+                dir('Front') {
+                    sh 'docker build -t finn-loan-analysis-frontend -f Dockerfile .'
+                }
             }
         }
         
         stage('Run Unit Tests') {
             steps {
-                script {
-                    // Build test-specific image
-                    sh """
-                        cd Back
-                        docker build -t ${PROJECT_NAME}-backend-test -f Dockerfile.test .
-                    """
+                dir('Back') {
+                    // Build test image
+                    sh 'docker build -t finn-loan-analysis-backend-test -f Dockerfile.test .'
                     
-                    // Run tests with proper error handling
-                    sh """
-                        cd Back
-                        docker run --rm ${PROJECT_NAME}-backend-test python -m pytest tests/ -v --junitxml=test-results.xml --cov=src --cov-report=xml:coverage.xml || echo "Tests completed with exit code: \$?"
-                    """
+                    // Create directories for test results
+                    sh 'mkdir -p test-results coverage'
+                    
+                    // Run tests with proper volume mounting for test results
+                    sh '''
+                    docker run --rm \
+                        -v ${WORKSPACE}/Back/test-results:/app/test-results \
+                        -v ${WORKSPACE}/Back/coverage:/app/coverage \
+                        finn-loan-analysis-backend-test \
+                        python -m pytest tests/ -v \
+                        --junitxml=/app/test-results/test-results.xml \
+                        --cov=src \
+                        --cov-report=xml:/app/coverage/coverage.xml
+                    '''
                 }
             }
             post {
                 always {
-                    // Always archive test results, even if tests fail
-                    junit "Back/test-results.xml"
-                    publishCoverage adapters: [jacocoAdapter("Back/coverage.xml")]
+                    // Archive test results regardless of test outcome
+                    junit 'Back/test-results/test-results.xml'
+                    archiveArtifacts artifacts: 'Back/coverage/coverage.xml', fingerprint: true
+                    
+                    // Also archive any existing test results from the container
+                    script {
+                        def testResults = findFiles(glob: 'Back/test-results/**/*.xml')
+                        if (testResults) {
+                            echo "Found test results: ${testResults}"
+                        } else {
+                            echo "No test results found in Back/test-results/"
+                            sh 'ls -la Back/test-results/ || true'
+                        }
+                    }
                 }
             }
         }
-
+        
         stage('Deploy') {
             steps {
-                script {
-                    sh 'docker-compose down || true'
-                    sh 'docker-compose up -d --build'
-                    sleep 30
-                    sh 'docker-compose ps'
-                }
+                sh 'docker-compose up -d --build'
+                sleep(time: 30, unit: 'SECONDS') // Wait for services to start
             }
         }
         
         stage('Health Check') {
             steps {
-                script {
-                    sh '''
-                        # Wait for services to start
-                        sleep 10
-                        curl -f http://localhost:8000/health || echo "Backend health check failed"
-                        curl -f http://localhost:3000 || echo "Frontend health check failed"
-                    '''
-                }
+                sh '''
+                # Wait for backend to be healthy
+                timeout 120 bash -c 'until curl -f http://localhost:8000/health; do sleep 5; done'
+                
+                # Wait for frontend to be accessible
+                timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 5; done'
+                '''
             }
         }
     }
     
     post {
         always {
-            // Cleanup
+            // Cleanup and collect logs
+            sh 'docker-compose logs --no-color > docker-logs.txt || true'
+            archiveArtifacts artifacts: 'docker-logs.txt', fingerprint: true
             sh 'docker-compose down || true'
             sh 'docker system prune -f || true'
-            sh 'docker-compose logs --no-color > docker-logs.txt || true'
-            archiveArtifacts artifacts: 'docker-logs.txt'
         }
-        
         success {
-            echo 'Pipeline completed successfully! 🎉'
+            echo 'Pipeline succeeded! ✅'
         }
-        
         failure {
             echo 'Pipeline failed! ❌'
+        }
+        unstable {
+            echo 'Pipeline unstable! ⚠️'
         }
     }
 }

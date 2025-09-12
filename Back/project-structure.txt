@@ -19,6 +19,7 @@
 │   └── logs
 │       └── loan_processor.log
 ├── Dockerfile
+├── Dockerfile.test
 ├── Fonts
 │   ├── DejaVuMathTeXGyre.ttf
 │   ├── DejaVuSans-Bold.ttf
@@ -113,61 +114,72 @@
 ├── migrate_feedback_db.py
 ├── project-structure.txt
 ├── requirements.txt
-└── src
-    ├── .DS_Store
+├── src
+│   ├── .DS_Store
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── api_client.cpython-310.pyc
+│   │   ├── api_client.cpython-312.pyc
+│   │   ├── config.cpython-310.pyc
+│   │   ├── config.cpython-312.pyc
+│   │   ├── data_loader.cpython-310.pyc
+│   │   ├── data_loader.cpython-312.pyc
+│   │   ├── data_models.cpython-310.pyc
+│   │   ├── data_models.cpython-312.pyc
+│   │   └── utils.cpython-310.pyc
+│   ├── api_client.py
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── data_models.py
+│   ├── llm
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-310.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── analyzer.cpython-310.pyc
+│   │   │   ├── analyzer.cpython-312.pyc
+│   │   │   ├── feedback.cpython-310.pyc
+│   │   │   ├── prompts.cpython-310.pyc
+│   │   │   └── vector_db.cpython-310.pyc
+│   │   ├── analyzer.py
+│   │   ├── feedback.py
+│   │   ├── prompts.py
+│   │   └── vector_db.py
+│   ├── reporting
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-310.pyc
+│   │   │   ├── pdf.cpython-310.pyc
+│   │   │   └── templates.cpython-310.pyc
+│   │   ├── pdf.py
+│   │   └── templates.py
+│   ├── risk_engine
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-310.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── base.cpython-310.pyc
+│   │   │   ├── base.cpython-312.pyc
+│   │   │   ├── business_rules.cpython-310.pyc
+│   │   │   ├── business_rules.cpython-312.pyc
+│   │   │   ├── scoring.cpython-310.pyc
+│   │   │   └── scoring.cpython-312.pyc
+│   │   ├── base.py
+│   │   ├── business_rules.py
+│   │   └── scoring.py
+│   └── utils.py
+├── test-results
+└── tests
     ├── __init__.py
-    ├── __pycache__
-    │   ├── __init__.cpython-310.pyc
-    │   ├── __init__.cpython-312.pyc
-    │   ├── api_client.cpython-310.pyc
-    │   ├── api_client.cpython-312.pyc
-    │   ├── config.cpython-310.pyc
-    │   ├── config.cpython-312.pyc
-    │   ├── data_loader.cpython-310.pyc
-    │   ├── data_loader.cpython-312.pyc
-    │   ├── data_models.cpython-310.pyc
-    │   ├── data_models.cpython-312.pyc
-    │   └── utils.cpython-310.pyc
-    ├── api_client.py
-    ├── config.py
-    ├── data_loader.py
-    ├── data_models.py
-    ├── llm
+    ├── conftest.py
+    ├── test_integration
     │   ├── __init__.py
-    │   ├── __pycache__
-    │   │   ├── __init__.cpython-310.pyc
-    │   │   ├── __init__.cpython-312.pyc
-    │   │   ├── analyzer.cpython-310.pyc
-    │   │   ├── analyzer.cpython-312.pyc
-    │   │   ├── feedback.cpython-310.pyc
-    │   │   ├── prompts.cpython-310.pyc
-    │   │   └── vector_db.cpython-310.pyc
-    │   ├── analyzer.py
-    │   ├── feedback.py
-    │   ├── prompts.py
-    │   └── vector_db.py
-    ├── reporting
-    │   ├── __init__.py
-    │   ├── __pycache__
-    │   │   ├── __init__.cpython-310.pyc
-    │   │   ├── pdf.cpython-310.pyc
-    │   │   └── templates.cpython-310.pyc
-    │   ├── pdf.py
-    │   └── templates.py
-    ├── risk_engine
-    │   ├── __init__.py
-    │   ├── __pycache__
-    │   │   ├── __init__.cpython-310.pyc
-    │   │   ├── __init__.cpython-312.pyc
-    │   │   ├── base.cpython-310.pyc
-    │   │   ├── base.cpython-312.pyc
-    │   │   ├── business_rules.cpython-310.pyc
-    │   │   ├── business_rules.cpython-312.pyc
-    │   │   ├── scoring.cpython-310.pyc
-    │   │   └── scoring.cpython-312.pyc
-    │   ├── base.py
-    │   ├── business_rules.py
-    │   └── scoring.py
-    └── utils.py
+    │   └── test_api_endpoints.py
+    └── test_units
+        ├── __init__.py
+        ├── test_llm_analyzer.py
+        └── test_risk_engine.py
 
-21 directories, 150 files
+25 directories, 158 files

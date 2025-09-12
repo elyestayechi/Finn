@@ -2,11 +2,11 @@ import pytest
 import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+import sys
+import os
 
-from src.data_loader import DataLoader
-from src.risk_engine import RiskEngine
-from src.llm import LLMAnalyzer, LoanVectorDB
-from src.api_client import APIClient
+# Add the src directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 @pytest.fixture
 def mock_loan_data():
@@ -47,3 +47,15 @@ def mock_analysis_result():
         "key_findings": ["Low risk profile", "Good collateral"],
         "conditions": ["Verify income documents", "Check collateral valuation"]
     }
+
+# Add async event loop fixture for async tests
+@pytest.fixture
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+# Add fixture for test data directory
+@pytest.fixture
+def test_data_dir():
+    return Path(__file__).parent / "test_data"

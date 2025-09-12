@@ -16,6 +16,7 @@ unicodedata2==15.1.0
 aiofiles==23.2.1
 psycopg2-binary==2.9.9
 pandas==2.0.3
+numpy<2.0.0
 python-multipart
 prometheus-client
 prometheus-fastapi-instrumentator

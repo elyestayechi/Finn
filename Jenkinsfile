@@ -64,12 +64,113 @@ pipeline {
         }
         
         stage('Deploy') {
-            steps {
-                // Use docker compose
-                sh 'docker compose up -d --build'
-                sleep(time: 30, unit: 'SECONDS')
-            }
-        }
+    steps {
+        // Deploy only the application services, not Jenkins
+        sh '''
+        # Create a custom docker-compose file without Jenkins
+        cat > docker-compose-app.yml << 'EOF'
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 30s
+      timeout: 30s
+      retries: 10
+      start_period: 120s
+
+  backend:
+    image: finn-loan-analysis-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Back/Data:/app/Data
+      - ./Back/PDF Loans:/app/PDF Loans
+      - ./Back/loans_vector.db:/app/loans_vector.db
+      - ./Back/loan_analysis.db:/app/loan_analysis.db
+    environment:
+      - PYTHONPATH=/app
+      - OLLAMA_HOST=http://ollama:11434
+      - PROMETHEUS_MULTIPROC_DIR=/tmp
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    image: finn-loan-analysis-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE_URL=http://backend:8000
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  ollama_data:
+  prometheus_data:
+  grafana_data:
+EOF
+
+        # Deploy only the application services
+        docker compose -f docker-compose-app.yml up -d --build
+        '''
+        sleep(time: 30, unit: 'SECONDS')
+    }
+}
         
         stage('Health Check') {
             steps {

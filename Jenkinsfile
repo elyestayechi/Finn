@@ -35,11 +35,11 @@ pipeline {
                     // Create directories for test results
                     sh 'mkdir -p test-results coverage'
                     
-                    // Run tests with proper volume mounting for test results
+                    // Run tests with proper volume mounting
                     sh '''
                     docker run --rm \
-                        -v ${WORKSPACE}/Back/test-results:/app/test-results \
-                        -v ${WORKSPACE}/Back/coverage:/app/coverage \
+                        -v "${WORKSPACE}/Back/test-results:/app/test-results" \
+                        -v "${WORKSPACE}/Back/coverage:/app/coverage" \
                         finn-loan-analysis-backend-test \
                         python -m pytest tests/ -v \
                         --junitxml=/app/test-results/test-results.xml \
@@ -50,20 +50,9 @@ pipeline {
             }
             post {
                 always {
-                    // Archive test results regardless of test outcome
+                    // Archive test results
                     junit 'Back/test-results/test-results.xml'
                     archiveArtifacts artifacts: 'Back/coverage/coverage.xml', fingerprint: true
-                    
-                    // Also archive any existing test results from the container
-                    script {
-                        def testResults = findFiles(glob: 'Back/test-results/**/*.xml')
-                        if (testResults) {
-                            echo "Found test results: ${testResults}"
-                        } else {
-                            echo "No test results found in Back/test-results/"
-                            sh 'ls -la Back/test-results/ || true'
-                        }
-                    }
                 }
             }
         }
@@ -71,7 +60,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh 'docker-compose up -d --build'
-                sleep(time: 30, unit: 'SECONDS') // Wait for services to start
+                sleep(time: 30, unit: 'SECONDS')
             }
         }
         
@@ -101,9 +90,6 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed! ❌'
-        }
-        unstable {
-            echo 'Pipeline unstable! ⚠️'
         }
     }
 }

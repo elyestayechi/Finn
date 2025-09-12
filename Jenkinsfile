@@ -64,12 +64,12 @@ pipeline {
         }
         
         stage('Deploy') {
-            steps {
-                // Use docker compose
-                sh 'docker compose up --no-build --scale jenkins=0 -d'
-                sleep(time: 30, unit: 'SECONDS')
-            }
-        }
+    steps {
+        // Use unique project name to avoid conflicts
+        sh 'docker compose -p finn-pipeline-${BUILD_ID} up --no-build --scale jenkins=0 -d'
+        sleep(time: 30, unit: 'SECONDS')
+    }
+}
         
         stage('Health Check') {
             steps {

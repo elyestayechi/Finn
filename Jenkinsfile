@@ -110,9 +110,11 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed! ❌'
-            // Mark as unstable instead of failed if only tests failed
-            if (currentBuild.result == 'FAILURE') {
-                currentBuild.result = 'UNSTABLE'
+            script {
+                // Mark as unstable instead of failed if only tests failed
+                if (currentBuild.result == 'FAILURE') {
+                    currentBuild.result = 'UNSTABLE'
+                }
             }
         }
     }

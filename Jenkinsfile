@@ -75,53 +75,45 @@ pipeline {
         }
         
         stage('Health Check') {
-            steps {
-                sh '''
-                # Health check du backend
-                echo "=== Vérification du backend ==="
-                BACKEND_CONTAINER=$(docker ps -q --filter "name=${COMPOSE_PROJECT_NAME}-backend")
+    steps {
+        sh '''
+        # Health check simplifié
+        echo "=== Vérification des services ==="
+        
+        # Attendre que les services soient accessibles depuis l'hôte
+        for i in {1..30}; do
+            echo "Tentative $i/30 - Vérification des services..."
+            
+            # Vérifier backend
+            if curl -f http://localhost:8000/health >/dev/null 2>&1; then
+                echo "✅ Backend est healthy!"
                 
-                if [ -z "$BACKEND_CONTAINER" ]; then
-                    echo "❌ Conteneur backend non trouvé"
-                    docker ps -a
-                    exit 1
+                # Vérifier frontend
+                if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                    echo "✅ Frontend est accessible!"
+                    echo "=== Tous les services sont opérationnels ==="
+                    exit 0
+                else
+                    echo "Frontend pas encore ready..."
                 fi
-                
-                timeout 120 bash -c '
-                for i in {1..24}; do
-                    if docker exec $BACKEND_CONTAINER curl -f http://localhost:8000/health; then
-                        echo "✅ Backend est healthy!"
-                        exit 0
-                    fi
-                    echo "Tentative $i/24 - Backend non ready, attente 5 secondes..."
-                    sleep 5
-                done
-                echo "❌ Échec: Backend non healthy après 2 minutes"
+            else
+                echo "Backend pas encore ready..."
+            fi
+            
+            if [ $i -eq 30 ]; then
+                echo "❌ Échec: Services non accessibles après 2 minutes 30"
+                echo "=== Logs du backend ==="
                 docker compose -p ${COMPOSE_PROJECT_NAME} logs backend
+                echo "=== Logs du frontend ==="
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend
                 exit 1
-                '
-                
-                # Health check du frontend
-                echo "=== Vérification du frontend ==="
-                FRONTEND_CONTAINER=$(docker ps -q --filter "name=${COMPOSE_PROJECT_NAME}-frontend")
-                timeout 60 bash -c '
-                for i in {1..12}; do
-                    if docker exec $FRONTEND_CONTAINER wget -q --spider http://localhost:3000; then
-                        echo "✅ Frontend est accessible!"
-                        exit 0
-                    fi
-                    echo "Tentative $i/12 - Frontend non ready, attente 5 secondes..."
-                    sleep 5
-                done
-                echo "❌ Échec: Frontend non accessible après 1 minute"
-                exit 1
-                '
-                
-                echo "=== Tous les services sont opérationnels ==="
-                '''
-            }
-        }
+            fi
+            
+            sleep 5
+        done
+        '''
     }
+}
     
     post {
         always {

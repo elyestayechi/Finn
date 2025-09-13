@@ -23,7 +23,7 @@ export default function SettingsPanel() {
     profile: {
       name: 'Elyes Tayechi',
       email: 'tayechielyes3@gmail.com',
-      role: 'PDG'
+      role: 'Hedha test lel pipeline'
     }
   });
 

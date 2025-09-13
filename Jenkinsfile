@@ -52,24 +52,49 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // CLEANUP COMPLET - Arrêter TOUS les conteneurs qui utilisent les ports 11434 ou 11435
+                // NETTOYAGE COMPLET - Arrêter TOUS les conteneurs qui pourraient bloquer les ports
                 sh '''
-                echo "=== Nettoyage des conteneurs existants ==="
+                echo "=== NETTOYAGE COMPLET DES CONTENEURS ==="
+                
                 # Arrêter le projet actuel
                 docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
                 
-                # Arrêter TOUS les conteneurs Ollama qui pourraient bloquer les ports
-                docker stop $(docker ps -q --filter "ancestor=ollama/ollama") 2>/dev/null || true
-                docker rm $(docker ps -aq --filter "ancestor=ollama/ollama") 2>/dev/null || true
+                # Arrêter TOUS les conteneurs qui pourraient bloquer nos ports
+                echo "Arrêt des conteneurs utilisant les ports 8000, 3000, 11434, 11435, 9090, 3001, 9093..."
                 
-                # Arrêter les conteneurs utilisant les ports 11434 ou 11435
-                docker stop $(docker ps -q --filter "publish=11434") 2>/dev/null || true
-                docker stop $(docker ps -q --filter "publish=11435") 2>/dev/null || true
-                docker rm $(docker ps -aq --filter "publish=11434") 2>/dev/null || true
-                docker rm $(docker ps -aq --filter "publish=11435") 2>/dev/null || true
+                # Liste de tous les ports utilisés par notre application
+                PORTS="8000 3000 11434 11435 9090 3001 9093"
+                
+                for port in $PORTS; do
+                    echo "Nettoyage du port $port"
+                    # Trouver et arrêter les conteneurs utilisant ce port
+                    CONTAINERS=$(docker ps -q --filter "publish=$port")
+                    if [ ! -z "$CONTAINERS" ]; then
+                        echo "Arrêt des conteneurs utilisant le port $port: $CONTAINERS"
+                        docker stop $CONTAINERS 2>/dev/null || true
+                        docker rm $CONTAINERS 2>/dev/null || true
+                    fi
+                    
+                    # Trouver et supprimer les conteneurs arrêtés utilisant ce port
+                    STOPPED_CONTAINERS=$(docker ps -aq --filter "publish=$port")
+                    if [ ! -z "$STOPPED_CONTAINERS" ]; then
+                        echo "Suppression des conteneurs arrêtés utilisant le port $port: $STOPPED_CONTAINERS"
+                        docker rm $STOPPED_CONTAINERS 2>/dev/null || true
+                    fi
+                done
+                
+                # Arrêter spécifiquement les conteneurs Ollama et backend
+                echo "Arrêt des conteneurs Ollama et backend..."
+                docker stop $(docker ps -q --filter "ancestor=ollama/ollama") 2>/dev/null || true
+                docker stop $(docker ps -q --filter "ancestor=finn-loan-analysis-backend") 2>/dev/null || true
+                docker rm $(docker ps -aq --filter "ancestor=ollama/ollama") 2>/dev/null || true
+                docker rm $(docker ps -aq --filter "ancestor=finn-loan-analysis-backend") 2>/dev/null || true
                 
                 # Nettoyer les réseaux orphelins
+                echo "Nettoyage des réseaux..."
                 docker network prune -f 2>/dev/null || true
+                
+                echo "=== NETTOYAGE TERMINÉ ==="
                 '''
                 
                 // Déploiement avec nom de projet unique
@@ -101,31 +126,34 @@ pipeline {
         always {
             script {
                 // Archivage des résultats de tests
-                if (fileExists("Back/test-results/test-results.xml")) {
-                    junit "Back/test-results/test-results.xml"
-                    echo "✓ Test results archivés depuis: Back/test-results/test-results.xml"
+                def testResultsFile = "Back/test-results/test-results.xml"
+                def coverageFile = "Back/coverage/coverage.xml"
+                
+                if (fileExists(testResultsFile)) {
+                    junit testResultsFile
+                    echo "✓ Test results archivés depuis: ${testResultsFile}"
                 } else {
-                    echo "⚠️ Fichier de résultats de tests non trouvé"
-                    sh 'find . -name "test-results.xml" -type f 2>/dev/null | head -5 || true'
+                    echo "⚠️ Fichier de résultats de tests non trouvé: ${testResultsFile}"
+                    sh "find . -name 'test-results.xml' -type f | head -5 || true"
                 }
                 
-                if (fileExists("Back/coverage/coverage.xml")) {
-                    archiveArtifacts artifacts: "Back/coverage/coverage.xml", fingerprint: true
-                    echo "✓ Couverture de code archivée depuis: Back/coverage/coverage.xml"
+                if (fileExists(coverageFile)) {
+                    archiveArtifacts artifacts: coverageFile, fingerprint: true
+                    echo "✓ Couverture de code archivée depuis: ${coverageFile}"
                 } else {
-                    echo "⚠️ Fichier de couverture non trouvé"
-                    sh 'find . -name "coverage.xml" -type f 2>/dev/null | head -5 || true'
+                    echo "⚠️ Fichier de couverture non trouvé: ${coverageFile}"
+                    sh "find . -name 'coverage.xml' -type f | head -5 || true"
                 }
             }
             
             // Nettoyage final avec le même nom de projet
             sh '''
-            echo "=== Nettoyage final ==="
+            echo "=== NETTOYAGE FINAL ==="
             docker compose -p ${COMPOSE_PROJECT_NAME} logs --no-color > docker-logs.txt 2>/dev/null || true
             docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
             
             # Nettoyage Docker complet mais PRÉSERVER JENKINS
-            echo "=== Nettoyage système Docker (sauf Jenkins) ==="
+            echo "Nettoyage système Docker (sauf Jenkins)..."
             docker system prune -f --filter "label!=com.docker.compose.project=jenkins" 2>/dev/null || true
             '''
             

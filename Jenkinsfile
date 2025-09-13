@@ -75,62 +75,65 @@ pipeline {
         }
         
         stage('Health Check') {
-    steps {
-        sh '''
-        # Health check simplifié
-        echo "=== Vérification des services ==="
-        
-        # Attendre que les services soient accessibles depuis l'hôte
-        for i in {1..30}; do
-            echo "Tentative $i/30 - Vérification des services..."
-            
-            # Vérifier backend
-            if curl -f http://localhost:8000/health >/dev/null 2>&1; then
-                echo "✅ Backend est healthy!"
+            steps {
+                sh '''
+                # Health check simplifié
+                echo "=== Vérification des services ==="
                 
-                # Vérifier frontend
-                if curl -f http://localhost:3000 >/dev/null 2>&1; then
-                    echo "✅ Frontend est accessible!"
-                    echo "=== Tous les services sont opérationnels ==="
-                    exit 0
-                else
-                    echo "Frontend pas encore ready..."
-                fi
-            else
-                echo "Backend pas encore ready..."
-            fi
-            
-            if [ $i -eq 30 ]; then
-                echo "❌ Échec: Services non accessibles après 2 minutes 30"
-                echo "=== Logs du backend ==="
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs backend
-                echo "=== Logs du frontend ==="
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend
-                exit 1
-            fi
-            
-            sleep 5
-        done
-        '''
-    }
-}
+                # Attendre que les services soient accessibles depuis l'hôte
+                for i in $(seq 1 30); do
+                    echo "Tentative $i/30 - Vérification des services..."
+                    
+                    # Vérifier backend
+                    if curl -f http://localhost:8000/health >/dev/null 2>&1; then
+                        echo "✅ Backend est healthy!"
+                        
+                        # Vérifier frontend
+                        if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                            echo "✅ Frontend est accessible!"
+                            echo "=== Tous les services sont opérationnels ==="
+                            exit 0
+                        else
+                            echo "Frontend pas encore ready..."
+                        fi
+                    else
+                        echo "Backend pas encore ready..."
+                    fi
+                    
+                    if [ $i -eq 30 ]; then
+                        echo "❌ Échec: Services non accessibles après 2 minutes 30"
+                        echo "=== Logs du backend ==="
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs backend
+                        echo "=== Logs du frontend ==="
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend
+                        exit 1
+                    fi
+                    
+                    sleep 5
+                done
+                '''
+            }
+        }
     }
     
     post {
         always {
             script {
-                if (fileExists("Back/test-results/test-results.xml")) {
-                    junit "Back/test-results/test-results.xml"
-                    echo "✓ Test results archivés"
+                def testResultsFile = "Back/test-results/test-results.xml"
+                def coverageFile = "Back/coverage/coverage.xml"
+                
+                if (fileExists(testResultsFile)) {
+                    junit testResultsFile
+                    echo "✓ Test results archivés depuis: ${testResultsFile}"
                 } else {
-                    echo "⚠️ Fichier de résultats de tests non trouvé"
+                    echo "⚠️ Fichier de résultats de tests non trouvé: ${testResultsFile}"
                 }
                 
-                if (fileExists("Back/coverage/coverage.xml")) {
-                    archiveArtifacts artifacts: "Back/coverage/coverage.xml", fingerprint: true
-                    echo "✓ Couverture de code archivée"
+                if (fileExists(coverageFile)) {
+                    archiveArtifacts artifacts: coverageFile, fingerprint: true
+                    echo "✓ Couverture de code archivée depuis: ${coverageFile}"
                 } else {
-                    echo "⚠️ Fichier de couverture non trouvé"
+                    echo "⚠️ Fichier de couverture non trouvé: ${coverageFile}"
                 }
             }
             

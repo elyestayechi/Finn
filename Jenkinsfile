@@ -52,25 +52,46 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // Clean up any potential conflicts first
+                // CLEANUP COMPLET - Arrêter TOUS les conteneurs qui utilisent les ports 11434 ou 11435
                 sh '''
+                echo "=== Nettoyage des conteneurs existants ==="
+                # Arrêter le projet actuel
                 docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
-                # Stop any existing ollama container that might be using port 11434
-                docker stop ollama 2>/dev/null || true
-                docker rm ollama 2>/dev/null || true
+                
+                # Arrêter TOUS les conteneurs Ollama qui pourraient bloquer les ports
+                docker stop $(docker ps -q --filter "ancestor=ollama/ollama") 2>/dev/null || true
+                docker rm $(docker ps -aq --filter "ancestor=ollama/ollama") 2>/dev/null || true
+                
+                # Arrêter les conteneurs utilisant les ports 11434 ou 11435
+                docker stop $(docker ps -q --filter "publish=11434") 2>/dev/null || true
+                docker stop $(docker ps -q --filter "publish=11435") 2>/dev/null || true
+                docker rm $(docker ps -aq --filter "publish=11434") 2>/dev/null || true
+                docker rm $(docker ps -aq --filter "publish=11435") 2>/dev/null || true
+                
+                # Nettoyer les réseaux orphelins
+                docker network prune -f 2>/dev/null || true
                 '''
                 
-                // Deploy with unique project name
+                // Déploiement avec nom de projet unique
                 sh 'docker compose -p ${COMPOSE_PROJECT_NAME} up --no-build --scale jenkins=0 -d'
-                sleep(time: 30, unit: 'SECONDS')
+                
+                // Attendre plus longtemps pour qu'Ollama démarre
+                sleep(time: 120, unit: 'SECONDS')
             }
         }
         
         stage('Health Check') {
             steps {
                 sh '''
-                timeout 120 bash -c 'until curl -f http://localhost:8000/health; do sleep 5; done'
-                timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 5; done'
+                # Attendre que le backend soit healthy
+                echo "=== Vérification du backend ==="
+                timeout 120 bash -c 'until curl -f http://localhost:8000/health; do sleep 5; echo "En attente du backend..."; done'
+                
+                # Attendre que le frontend soit accessible
+                echo "=== Vérification du frontend ==="
+                timeout 60 bash -c 'until curl -f http://localhost:3000 >/dev/null 2>&1; do sleep 5; echo "En attente du frontend..."; done'
+                
+                echo "=== Tous les services sont opérationnels ==="
                 '''
             }
         }
@@ -79,35 +100,42 @@ pipeline {
     post {
         always {
             script {
-                // Archive test results with correct path
+                // Archivage des résultats de tests
                 if (fileExists("Back/test-results/test-results.xml")) {
                     junit "Back/test-results/test-results.xml"
-                    echo "✓ Test results archived from: Back/test-results/test-results.xml"
+                    echo "✓ Test results archivés depuis: Back/test-results/test-results.xml"
                 } else {
-                    echo "⚠️ Test results file not found"
+                    echo "⚠️ Fichier de résultats de tests non trouvé"
                     sh 'find . -name "test-results.xml" -type f 2>/dev/null | head -5 || true'
                 }
                 
                 if (fileExists("Back/coverage/coverage.xml")) {
                     archiveArtifacts artifacts: "Back/coverage/coverage.xml", fingerprint: true
-                    echo "✓ Coverage archived from: Back/coverage/coverage.xml"
+                    echo "✓ Couverture de code archivée depuis: Back/coverage/coverage.xml"
                 } else {
-                    echo "⚠️ Coverage file not found"
+                    echo "⚠️ Fichier de couverture non trouvé"
                     sh 'find . -name "coverage.xml" -type f 2>/dev/null | head -5 || true'
                 }
             }
             
-            // Cleanup with the same project name
-            sh 'docker compose -p ${COMPOSE_PROJECT_NAME} logs --no-color > docker-logs.txt 2>/dev/null || true'
+            // Nettoyage final avec le même nom de projet
+            sh '''
+            echo "=== Nettoyage final ==="
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs --no-color > docker-logs.txt 2>/dev/null || true
+            docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
+            
+            # Nettoyage Docker complet mais PRÉSERVER JENKINS
+            echo "=== Nettoyage système Docker (sauf Jenkins) ==="
+            docker system prune -f --filter "label!=com.docker.compose.project=jenkins" 2>/dev/null || true
+            '''
+            
             archiveArtifacts artifacts: 'docker-logs.txt', fingerprint: true
-            sh 'docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true'
-            sh 'docker system prune -f || true'
         }
         success {
-            echo 'Pipeline succeeded! ✅'
+            echo 'Pipeline réussi ! ✅'
         }
         failure {
-            echo 'Pipeline failed! ❌'
+            echo 'Pipeline échoué ! ❌'
         }
     }
 }

@@ -98,21 +98,19 @@ services:
       - prometheus
 
   jenkins:
-    build:
-      context: ./jenkins
-      dockerfile: Dockerfile
-    ports:
-      - "9190:8080"
-      - "9191:50000"
-    volumes:
-      - jenkins_data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./jenkins/scripts:/var/jenkins_scripts
-    environment:
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-    restart: unless-stopped
-    user: root
-    privileged: true
+  build:
+    context: ./jenkins
+    dockerfile: Dockerfile
+  ports:
+    - "${JENKINS_WEB_PORT:-9192}:8080"
+    - "${JENKINS_AGENT_PORT:-9193}:50000"
+  volumes:
+    - jenkins_data:/var/jenkins_home
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./jenkins/scripts:/var/jenkins_scripts
+  environment:
+    - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+  restart: unless-stopped
 
 volumes:
   ollama_data:

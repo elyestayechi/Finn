@@ -139,24 +139,26 @@ pipeline {
         }
         
         stage('Deploy Complete Stack') {
-            steps {
-                sh '''
-                echo "=== Cleaning up previous containers ==="
-                docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
-                
-                # Clean up any dangling containers
-                docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
-                
-                # Build and start the complete stack
-                echo "=== Building and starting complete application stack ==="
-                
-                docker compose -p ${COMPOSE_PROJECT_NAME} up --build -d
-                
-                echo "=== Waiting for full stack initialization (3 minutes) ==="
-                sleep 180
-                '''
-            }
-        }
+    steps {
+        sh '''
+        echo "=== Cleaning up previous containers ==="
+        docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
+        
+        # Clean up any dangling containers
+        docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
+        
+        # Build and start the complete stack with DIFFERENT Jenkins ports
+        echo "=== Building and starting complete application stack ==="
+        
+        # Use different ports to avoid conflict with current Jenkins
+        JENKINS_WEB_PORT=9192 JENKINS_AGENT_PORT=9193 docker compose -p ${COMPOSE_PROJECT_NAME} up --build -d
+        
+        echo "=== Waiting for full stack initialization (3 minutes) ==="
+        sleep 180
+        '''
+    }
+}
+
         
         stage('Comprehensive Health Check') {
             steps {
@@ -312,46 +314,48 @@ pipeline {
         }
         
         stage('Deploy Jenkins & Final Validation') {
-            steps {
-                sh '''
-                echo "=== Deploying Jenkins for future pipelines ==="
-                
-                # Start Jenkins (was built but not started initially to avoid port conflicts)
-                docker compose -p ${COMPOSE_PROJECT_NAME} up -d jenkins
-                
-                echo "Waiting for Jenkins to start..."
-                sleep 90
-                
-                # Test Jenkins health (no authentication required)
-                if curl -f http://localhost:9190 >/dev/null 2>&1; then
-                    echo "✅ Jenkins is running and accessible"
-                else
-                    echo "⚠️ Jenkins health check failed - may need more time"
-                    docker compose -p ${COMPOSE_PROJECT_NAME} logs jenkins | tail -20
-                fi
-                
-                echo "=== Final system validation ==="
-                echo "Your complete AI agent stack is now running with:"
-                echo " Frontend: http://localhost:3000"
-                echo " Backend API: http://localhost:8000"
-                echo " Prometheus: http://localhost:9090"
-                echo " Grafana: http://localhost:3001"
-                echo " Alertmanager: http://localhost:9093"
-                echo " Jenkins: http://localhost:9190"
-                echo " Ollama: http://localhost:11435"
-                
-                # Verify all critical endpoints
-                echo "=== Testing critical endpoints ==="
-                for endpoint in "http://localhost:3000" "http://localhost:8000/health" "http://localhost:9090"; do
-                    if curl -f "$endpoint" >/dev/null 2>&1; then
-                        echo "✅ $endpoint is accessible"
-                    else
-                        echo "❌ $endpoint is not accessible"
-                    fi
-                done
-                '''
-            }
-        }
+    steps {
+        sh '''
+        echo "=== Deploying NEW Jenkins instance for future pipelines ==="
+        echo "New Jenkins will be available on port 9192 (current Jenkins is on 9190)"
+        
+        # Test NEW Jenkins health (on different port)
+        if curl -f http://localhost:9192 >/dev/null 2>&1; then
+            echo "✅ NEW Jenkins is running and accessible on port 9192"
+            echo ""
+            echo "=== MIGRATION INSTRUCTIONS ==="
+            echo "1. Access new Jenkins: http://localhost:9192"
+            echo "2. Configure new Jenkins (import jobs/config from old Jenkins if needed)"
+            echo "3. When ready, update your docker-compose.yml to use port 9192 for production"
+            echo "4. Stop current Jenkins (port 9190) and switch to new Jenkins"
+        else
+            echo "⚠️ New Jenkins health check failed - may need more time"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs jenkins | tail -20
+        fi
+        
+        echo "=== Final system validation ==="
+        echo "Your complete AI agent stack is now running with:"
+        echo " Frontend: http://localhost:3000"
+        echo " Backend API: http://localhost:8000"
+        echo " Prometheus: http://localhost:9090"
+        echo " Grafana: http://localhost:3001"
+        echo " Alertmanager: http://localhost:9093"
+        echo " NEW Jenkins: http://localhost:9192 (for next version)"
+        echo " CURRENT Jenkins: http://localhost:9190 (still running this pipeline)"
+        echo " Ollama: http://localhost:11435"
+        
+        # Verify all critical endpoints
+        echo "=== Testing critical endpoints ==="
+        for endpoint in "http://localhost:3000" "http://localhost:8000/health" "http://localhost:9090" "http://localhost:9192"; do
+            if curl -f "$endpoint" >/dev/null 2>&1; then
+                echo "✅ $endpoint is accessible"
+            else
+                echo "❌ $endpoint is not accessible"
+            fi
+        done
+        '''
+    }
+}
     }
     
     post {

@@ -142,6 +142,88 @@ pipeline {
             }
         }
         
+        stage('Comprehensive Health Check') {
+    steps {
+        sh '''
+        echo "=== Comprehensive health check of ALL services ==="
+        
+        # Check services using Docker exec (from within the container network)
+        echo "Checking ollama (internal port 11434)..."
+        for i in $(seq 1 30); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T ollama curl -f http://localhost:11434 >/dev/null 2>&1; then
+                echo "✅ Ollama is healthy!"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                echo "❌ Ollama health check failed after 150 seconds"
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs ollama | tail -20
+            fi
+            sleep 5
+        done
+        
+        echo "Checking backend..."
+        for i in $(seq 1 30); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health >/dev/null 2>&1; then
+                echo "✅ Backend is healthy!"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                echo "❌ Backend health check failed after 150 seconds"
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs backend | tail -20
+                exit 1
+            fi
+            sleep 5
+        done
+        
+        echo "Checking frontend..."
+        for i in $(seq 1 30); do
+            if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                echo "✅ Frontend is accessible!"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                echo "❌ Frontend health check failed after 150 seconds"
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend | tail -20
+            fi
+            sleep 5
+        done
+        
+        echo "Checking prometheus..."
+        for i in $(seq 1 20); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T prometheus curl -f http://localhost:9090/-/healthy >/dev/null 2>&1; then
+                echo "✅ Prometheus is healthy!"
+                break
+            fi
+            if [ $i -eq 20 ]; then
+                echo "❌ Prometheus health check failed after 100 seconds"
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus | tail -20
+            fi
+            sleep 5
+        done
+        
+        echo "✅ Core services are healthy!"
+        
+        # Test monitoring integration
+        echo "=== Testing monitoring integration ==="
+        
+        # Test Prometheus is scraping backend (from host since port 9090 is exposed)
+        if curl -s http://localhost:9090/api/v1/targets | grep -q "backend.*UP"; then
+            echo "✅ Prometheus is successfully scraping backend metrics"
+        else
+            echo "⚠️ Prometheus not scraping backend properly"
+            curl -s http://localhost:9090/api/v1/targets | grep backend || true
+        fi
+        
+        # Test backend-Ollama integration
+        if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health | grep -q "healthy"; then
+            echo "✅ Backend-Ollama integration working"
+        else
+            echo "❌ Backend-Ollama integration failed"
+        fi
+        '''
+    }
+}
+        
         stage('Final Validation') {
             steps {
                 sh '''

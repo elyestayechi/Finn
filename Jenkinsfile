@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_HOST = 'unix:///var/run/docker.sock'
-        COMPOSE_PROJECT_NAME = "finn-pipeline-${BUILD_ID}"
+        COMPOSE_PROJECT_NAME = "Finn-Pipeline-${BUILD_ID}"
         WORKSPACE = pwd()
     }
     stages {
@@ -146,11 +146,11 @@ pipeline {
                 echo "=== NETTOYAGE TERMINÉ ==="
                 '''
                 
-                sh 'docker compose -p ${COMPOSE_PROJECT_NAME} up --no-build --scale jenkins=0 -d'
+                sh 'docker compose -p ${COMPOSE_PROJECT_NAME} up --build --scale jenkins=0 -d'
                 sleep(time: 60, unit: 'SECONDS')
             }
         }
-        
+
         stage('Comprehensive Health Check') {
     steps {
         sh '''

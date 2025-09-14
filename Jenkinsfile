@@ -16,6 +16,9 @@ pipeline {
                 chmod +x create-monitoring-structure.sh
                 ./create-monitoring-structure.sh
                 
+                # Rename PDF directory to avoid spaces
+                mv "Back/PDF Loans" "Back/PDF_Loans" 2>/dev/null || true
+                
                 # Create test directories
                 mkdir -p Back/test-results Back/coverage
                 chmod 777 Back/test-results Back/coverage
@@ -23,7 +26,7 @@ pipeline {
             }
         }
         
-        stage('Build Images') {
+        stage('Build All Images') {
             steps {
                 parallel(
                     'Build Backend': {
@@ -34,6 +37,11 @@ pipeline {
                     'Build Frontend': {
                         dir('Front') {
                             sh 'docker build -t finn-loan-analysis-frontend -f Dockerfile .'
+                        }
+                    },
+                    'Build Jenkins': {
+                        dir('jenkins') {
+                            sh 'docker build -t finn-jenkins -f Dockerfile .'
                         }
                     }
                 )
@@ -71,10 +79,10 @@ pipeline {
                 sleep 2
                 
                 echo "=== Deploying application stack ==="
-                docker compose -p ${COMPOSE_PROJECT_NAME} up -d --scale jenkins=0
+                docker compose -p ${COMPOSE_PROJECT_NAME} up -d --build --scale jenkins=0
                 
                 echo "=== Waiting for services to start ==="
-                sleep 30
+                sleep 60
                 '''
             }
         }
@@ -89,15 +97,48 @@ pipeline {
                     echo "✅ Backend is healthy"
                 else
                     echo "❌ Backend health check failed"
+                    docker compose -p ${COMPOSE_PROJECT_NAME} logs backend
                     exit 1
                 fi
                 
-                # Check if services are running
+                # Check frontend
+                if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                    echo "✅ Frontend is accessible"
+                else
+                    echo "⚠️ Frontend may not be fully ready"
+                fi
+                
+                # Check monitoring services
                 if docker compose -p ${COMPOSE_PROJECT_NAME} ps | grep -q "Up"; then
                     echo "✅ All services are running"
                 else
                     echo "❌ Some services failed to start"
+                    docker compose -p ${COMPOSE_PROJECT_NAME} ps
                     exit 1
+                fi
+                '''
+            }
+        }
+        
+        stage('Verify Monitoring') {
+            steps {
+                sh '''
+                echo "=== Verifying monitoring services ==="
+                
+                # Check Prometheus configuration
+                if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T prometheus promtool check config /etc/prometheus/prometheus.yml; then
+                    echo "✅ Prometheus configuration is valid"
+                else
+                    echo "❌ Prometheus configuration is invalid"
+                    docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus
+                fi
+                
+                # Check Alertmanager configuration
+                if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T alertmanager amtool check-config /etc/alertmanager/config.yml; then
+                    echo "✅ Alertmanager configuration is valid"
+                else
+                    echo "❌ Alertmanager configuration is invalid"
+                    docker compose -p ${COMPOSE_PROJECT_NAME} logs alertmanager
                 fi
                 '''
             }
@@ -112,7 +153,7 @@ pipeline {
                 
                 // Capture logs
                 sh '''
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs --no-color --tail=100 > deployment-logs.txt
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs --no-color --tail=200 > deployment-logs.txt
                 docker compose -p ${COMPOSE_PROJECT_NAME} ps > container-status.txt
                 '''
                 
@@ -136,6 +177,8 @@ pipeline {
             echo "Backend: http://localhost:8000"
             echo "Prometheus: http://localhost:9090"
             echo "Grafana: http://localhost:3001"
+            echo "Alertmanager: http://localhost:9093"
+            echo "Ollama: http://localhost:11435"
             '''
         }
     }

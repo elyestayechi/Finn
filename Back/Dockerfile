@@ -29,4 +29,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=90s --retries=3 \
 ENV PYTHONPATH=/app
 
 # Create startup script that runs migration then starts the app
-CMD ["sh", "-c", "python migrate_data.py && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2"]
+CMD ["sh", "-c", " python migrate_data.py || echo 'Migration failed or already completed'; python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2 "]

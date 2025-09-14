@@ -1,0 +1,17 @@
+.
+├── alertmanager
+│   └── config.yml
+├── grafana
+│   └── provisioning
+│       ├── dashboards
+│       │   ├── dashboards.yml
+│       │   ├── finn-compact-dashboard.json
+│       │   └── finn-executive-dashboard.json
+│       └── datasources
+│           └── datasource.yml
+├── project-structure.txt
+└── prometheus
+    ├── alerts.yml
+    └── prometheus.yml
+
+7 directories, 8 files

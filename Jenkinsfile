@@ -126,25 +126,31 @@ pipeline {
         }
         
         stage('Deploy Complete Stack') {
-            steps {
-                sh '''
-                echo "=== Cleaning up previous containers ==="
-                docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
-                
-                # Clean up any dangling containers
-                docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
-                
-                # Build and start the complete stack EXCEPT Jenkins
-                echo "=== Building and starting application stack (excluding Jenkins) ==="
-                
-                docker compose -p ${COMPOSE_PROJECT_NAME} up --build --scale jenkins=0 -d
-                
-                echo "=== Waiting for full stack initialization (3 minutes) ==="
-                sleep 180
-                '''
-            }
-        }
+    steps {
+        sh '''
+        echo "=== Cleaning up previous containers ==="
+        # Force stop and remove any containers using our ports
+        docker compose -p ${COMPOSE_PROJECT_NAME} down -v --remove-orphans 2>/dev/null || true
         
+        # Clean up any dangling containers
+        docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
+        
+        # Kill any processes using our ports
+        for port in 8000 3000 9090 9093 3001 11435; do
+            echo "Checking port $port..."
+            lsof -ti:$port | xargs kill -9 2>/dev/null || true
+        done
+        
+        # Build and start the complete stack EXCEPT Jenkins
+        echo "=== Building and starting application stack (excluding Jenkins) ==="
+        
+        docker compose -p ${COMPOSE_PROJECT_NAME} up --build --scale jenkins=0 -d
+        
+        echo "=== Waiting for full stack initialization (3 minutes) ==="
+        sleep 180
+        '''
+    }
+}
         stage('Comprehensive Health Check') {
     steps {
         sh '''

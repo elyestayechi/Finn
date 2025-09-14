@@ -64,37 +64,27 @@ pipeline {
         }
         
         stage('Deploy Stack') {
-    steps {
-        sh '''
-        echo "=== Cleaning up previous deployment ==="
-        # Clean up any existing containers from ALL finn projects
-        docker ps -aq --filter "name=finn" | xargs -r docker rm -f 2>/dev/null || true
-        docker ps -aq --filter "name=backend" | xargs -r docker rm -f 2>/dev/null || true
-        docker ps -aq --filter "name=frontend" | xargs -r docker rm -f 2>/dev/null || true
-        docker ps -aq --filter "name=prometheus" | xargs -r docker rm -f 2>/dev/null || true
-        docker ps -aq --filter "name=alertmanager" | xargs -r docker rm -f 2>/dev/null || true
-        docker ps -aq --filter "name=grafana" | xargs -r docker rm -f 2>/dev/null || true
-        docker ps -aq --filter "name=ollama" | xargs -r docker rm -f 2>/dev/null || true
-        
-        # Clean up current project
-        docker compose -p ${COMPOSE_PROJECT_NAME} down -v --remove-orphans 2>/dev/null || true
-        
-        # Free up ports
-        for port in 8000 3000 9090 9093 3001 11435; do
-            echo "Freeing port $port"
-            docker ps -q --filter "publish=$port" | xargs -r docker rm -f 2>/dev/null || true
-        done
-        
-        sleep 2
-        
-        echo "=== Deploying application stack ==="
-        docker compose -p ${COMPOSE_PROJECT_NAME} up -d --build --scale jenkins=0
-        
-        echo "=== Waiting for services to start ==="
-        sleep 60
-        '''
-    }
-}
+            steps {
+                sh '''
+                echo "=== Cleaning up previous deployment ==="
+                # Clean up any existing containers
+                docker compose -p ${COMPOSE_PROJECT_NAME} down -v --remove-orphans 2>/dev/null || true
+                
+                # Free up ports
+                for port in 8000 3000 9090 9093 3001 11435; do
+                    docker ps -q --filter "publish=$port" | xargs -r docker rm -f 2>/dev/null || true
+                done
+                
+                sleep 2
+                
+                echo "=== Deploying application stack ==="
+                docker compose -p ${COMPOSE_PROJECT_NAME} up -d --build --scale jenkins=0
+                
+                echo "=== Waiting for services to start ==="
+                sleep 60
+                '''
+            }
+        }
         
         stage('Health Check') {
             steps {

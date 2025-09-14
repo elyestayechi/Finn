@@ -23,22 +23,30 @@ pipeline {
             mkdir -p monitoring/prometheus monitoring/alertmanager monitoring/grafana/provisioning/datasources monitoring/grafana/provisioning/dashboards
         fi
         
-        # Verify critical monitoring files exist
+        # Verify critical monitoring files exist (using compatible shell syntax)
         echo "Checking monitoring configuration files..."
-        REQUIRED_FILES=(
-            "monitoring/prometheus/prometheus.yml"
-            "monitoring/prometheus/alerts.yml"
-            "monitoring/alertmanager/config.yml"
-        )
         
-        for file in "${REQUIRED_FILES[@]}"; do
-            if [ ! -f "$file" ]; then
-                echo "❌ ERROR: Required file not found: $file"
-                exit 1
-            else
-                echo "✅ Found: $file"
-            fi
-        done
+        # Check each file individually (no arrays)
+        if [ ! -f "monitoring/prometheus/prometheus.yml" ]; then
+            echo "❌ ERROR: Required file not found: monitoring/prometheus/prometheus.yml"
+            exit 1
+        else
+            echo "✅ Found: monitoring/prometheus/prometheus.yml"
+        fi
+        
+        if [ ! -f "monitoring/prometheus/alerts.yml" ]; then
+            echo "❌ ERROR: Required file not found: monitoring/prometheus/alerts.yml"
+            exit 1
+        else
+            echo "✅ Found: monitoring/prometheus/alerts.yml"
+        fi
+        
+        if [ ! -f "monitoring/alertmanager/config.yml" ]; then
+            echo "❌ ERROR: Required file not found: monitoring/alertmanager/config.yml"
+            exit 1
+        else
+            echo "✅ Found: monitoring/alertmanager/config.yml"
+        fi
         
         # Create test directories
         mkdir -p Back/test-results Back/coverage
@@ -142,45 +150,105 @@ pipeline {
         sh '''
         echo "=== Comprehensive health check of ALL services ==="
 
-        # Function to check service health
-        check_service() {
-            local service=$1
-            local check_cmd=$2
-            local max_attempts=$3
-            local attempt=1
-            
-            echo "Checking $service..."
-            while [ $attempt -le $max_attempts ]; do
-                if eval "$check_cmd" >/dev/null 2>&1; then
-                    echo "✅ $service is healthy!"
-                    return 0
-                fi
-                echo "Waiting for $service... (attempt $attempt/$max_attempts)"
-                sleep 5
-                attempt=$((attempt + 1))
-            done
-            
-            echo "❌ $service health check failed after $((max_attempts * 5)) seconds"
-            docker compose -p ${COMPOSE_PROJECT_NAME} logs $service | tail -20
-            return 1
-        }
+        # Check services individually (no function to avoid shell compatibility issues)
+        echo "Checking backend..."
+        backend_healthy=0
+        for i in $(seq 1 30); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health >/dev/null 2>&1; then
+                echo "✅ Backend is healthy!"
+                backend_healthy=1
+                break
+            fi
+            echo "Waiting for backend... (attempt $i/30)"
+            sleep 5
+        done
+        
+        if [ $backend_healthy -eq 0 ]; then
+            echo "❌ Backend health check failed after 150 seconds"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs backend | tail -20
+            exit 1
+        fi
 
-        # Check services with appropriate timeouts
-        check_service "backend" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health" 30
-        check_service "frontend" "curl -f http://localhost:3000" 30
+        echo "Checking frontend..."
+        frontend_healthy=0
+        for i in $(seq 1 30); do
+            if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                echo "✅ Frontend is accessible!"
+                frontend_healthy=1
+                break
+            fi
+            echo "Waiting for frontend... (attempt $i/30)"
+            sleep 5
+        done
+        
+        if [ $frontend_healthy -eq 0 ]; then
+            echo "❌ Frontend health check failed after 150 seconds"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend | tail -20
+        fi
         
         # Check monitoring services
-        check_service "prometheus" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T prometheus curl -f http://localhost:9090/-/healthy" 20
-        check_service "alertmanager" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T alertmanager curl -f http://localhost:9093/-/healthy" 20
-        check_service "grafana" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T grafana curl -f http://localhost:3000/api/health" 20
+        echo "Checking prometheus..."
+        prometheus_healthy=0
+        for i in $(seq 1 20); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T prometheus curl -f http://localhost:9090/-/healthy >/dev/null 2>&1; then
+                echo "✅ Prometheus is healthy!"
+                prometheus_healthy=1
+                break
+            fi
+            echo "Waiting for prometheus... (attempt $i/20)"
+            sleep 5
+        done
+        
+        if [ $prometheus_healthy -eq 0 ]; then
+            echo "❌ Prometheus health check failed after 100 seconds"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus | tail -20
+        fi
+
+        # Similar pattern for other services...
+        echo "Checking alertmanager..."
+        alertmanager_healthy=0
+        for i in $(seq 1 20); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T alertmanager curl -f http://localhost:9093/-/healthy >/dev/null 2>&1; then
+                echo "✅ Alertmanager is healthy!"
+                alertmanager_healthy=1
+                break
+            fi
+            echo "Waiting for alertmanager... (attempt $i/20)"
+            sleep 5
+        done
+        
+        if [ $alertmanager_healthy -eq 0 ]; then
+            echo "❌ Alertmanager health check failed after 100 seconds"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs alertmanager | tail -20
+        fi
+
+        echo "Checking grafana..."
+        grafana_healthy=0
+        for i in $(seq 1 20); do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T grafana curl -f http://localhost:3000/api/health >/dev/null 2>&1; then
+                echo "✅ Grafana is healthy!"
+                grafana_healthy=1
+                break
+            fi
+            echo "Waiting for grafana... (attempt $i/20)"
+            sleep 5
+        done
+        
+        if [ $grafana_healthy -eq 0 ]; then
+            echo "❌ Grafana health check failed after 100 seconds"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs grafana | tail -20
+        fi
 
         # Ollama might take longer to start
         echo "Checking ollama (may take several minutes)..."
+        ollama_healthy=0
         for i in $(seq 1 60); do
             if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T ollama curl -f http://localhost:11434 >/dev/null 2>&1; then
                 echo "✅ Ollama is healthy!"
+                ollama_healthy=1
                 break
             fi
+            echo "Waiting for ollama... (attempt $i/60)"
             if [ $i -eq 60 ]; then
                 echo "⚠️ Ollama is still starting (this is normal for first run)"
                 docker compose -p ${COMPOSE_PROJECT_NAME} logs ollama | tail -10

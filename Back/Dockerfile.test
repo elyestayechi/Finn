@@ -25,6 +25,7 @@ RUN mkdir -p /app/test-results /app/coverage
 
 # Set Python path
 ENV PYTHONPATH=/app
+ENV OLLAMA_HOST=http://dummy:11434  
 
 # Default command to run tests
 CMD ["python", "-m", "pytest", "tests/", "-v", \

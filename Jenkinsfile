@@ -4,8 +4,6 @@ pipeline {
         DOCKER_HOST = 'unix:///var/run/docker.sock'
         COMPOSE_PROJECT_NAME = "finn-pipeline-${BUILD_ID}"
         WORKSPACE = pwd()
-        // Create a safe workspace path without spaces
-        SAFE_WORKSPACE = sh(script: 'echo "${WORKSPACE}" | sed "s/ /\\\\ /g"', returnStdout: true).trim()
     }
     stages {
         stage('Checkout & Prepare') {
@@ -15,7 +13,6 @@ pipeline {
                 sh '''
                 echo "=== Preparing workspace ==="
                 echo "Workspace: ${WORKSPACE}"
-                echo "Safe Workspace: ${SAFE_WORKSPACE}"
                 
                 # Create test directories
                 mkdir -p Back/test-results Back/coverage
@@ -27,23 +24,46 @@ pipeline {
                     exit 1
                 fi
                 
-                # Verify critical monitoring files exist
-                REQUIRED_FILES=(
-                    "monitoring/prometheus/prometheus.yml"
-                    "monitoring/prometheus/alerts.yml"
-                    "monitoring/alertmanager/config.yml"
-                    "monitoring/grafana/provisioning/datasources/datasource.yml"
-                    "monitoring/grafana/provisioning/dashboards/dashboards.yml"
-                )
+                # Verify critical monitoring files exist (without arrays)
+                echo "Checking monitoring/prometheus/prometheus.yml..."
+                if [ ! -f "monitoring/prometheus/prometheus.yml" ]; then
+                    echo "❌ ERROR: monitoring/prometheus/prometheus.yml not found!"
+                    exit 1
+                else
+                    echo "✅ Found: monitoring/prometheus/prometheus.yml"
+                fi
                 
-                for file in "${REQUIRED_FILES[@]}"; do
-                    if [ ! -f "$file" ]; then
-                        echo "❌ ERROR: $file not found!"
-                        exit 1
-                    else
-                        echo "✅ Found: $file"
-                    fi
-                done
+                echo "Checking monitoring/prometheus/alerts.yml..."
+                if [ ! -f "monitoring/prometheus/alerts.yml" ]; then
+                    echo "❌ ERROR: monitoring/prometheus/alerts.yml not found!"
+                    exit 1
+                else
+                    echo "✅ Found: monitoring/prometheus/alerts.yml"
+                fi
+                
+                echo "Checking monitoring/alertmanager/config.yml..."
+                if [ ! -f "monitoring/alertmanager/config.yml" ]; then
+                    echo "❌ ERROR: monitoring/alertmanager/config.yml not found!"
+                    exit 1
+                else
+                    echo "✅ Found: monitoring/alertmanager/config.yml"
+                fi
+                
+                echo "Checking monitoring/grafana/provisioning/datasources/datasource.yml..."
+                if [ ! -f "monitoring/grafana/provisioning/datasources/datasource.yml" ]; then
+                    echo "❌ ERROR: monitoring/grafana/provisioning/datasources/datasource.yml not found!"
+                    exit 1
+                else
+                    echo "✅ Found: monitoring/grafana/provisioning/datasources/datasource.yml"
+                fi
+                
+                echo "Checking monitoring/grafana/provisioning/dashboards/dashboards.yml..."
+                if [ ! -f "monitoring/grafana/provisioning/dashboards/dashboards.yml" ]; then
+                    echo "❌ ERROR: monitoring/grafana/provisioning/dashboards/dashboards.yml not found!"
+                    exit 1
+                else
+                    echo "✅ Found: monitoring/grafana/provisioning/dashboards/dashboards.yml"
+                fi
                 
                 echo "=== Monitoring configuration verified ==="
                 '''
@@ -72,7 +92,7 @@ pipeline {
                         sh '''
                         echo "=== Verifying monitoring configuration ==="
                         
-                        # Use a different approach - copy files to a temp directory without spaces
+                        # Use a different approach - copy files to a temp directory
                         mkdir -p /tmp/monitoring_verify
                         cp -r monitoring/* /tmp/monitoring_verify/
                         
@@ -81,7 +101,6 @@ pipeline {
                             echo "✅ Prometheus configuration is valid"
                         else
                             echo "❌ Prometheus configuration is invalid"
-                            # Don't exit immediately, let other builds continue
                         fi
                         
                         # Test Alertmanager config
@@ -131,8 +150,6 @@ pipeline {
                 # Build and start the complete stack
                 echo "=== Building and starting complete application stack ==="
                 
-                # Use a different approach to handle the space in path
-                cd "${WORKSPACE}"
                 docker compose -p ${COMPOSE_PROJECT_NAME} up --build -d
                 
                 echo "=== Waiting for full stack initialization (3 minutes) ==="
@@ -146,33 +163,85 @@ pipeline {
                 sh '''
                 echo "=== Comprehensive health check of ALL services ==="
                 
-                # Check each service individually with increased timeout
-                check_service() {
-                    local service_name=$1
-                    local port=$2
-                    local endpoint=$3
-                    local timeout=$4
-                    
-                    echo "Checking $service_name..."
-                    for i in $(seq 1 $timeout); do
-                        if curl -f "http://localhost:${port}${endpoint}" >/dev/null 2>&1; then
-                            echo "✅ $service_name is healthy!"
-                            return 0
-                        fi
-                        sleep 5
-                    done
-                    echo "❌ $service_name health check failed after $(($timeout * 5)) seconds"
-                    docker compose -p ${COMPOSE_PROJECT_NAME} logs $service_name | tail -20
-                    return 1
-                }
+                # Check each service individually
+                echo "Checking ollama..."
+                for i in $(seq 1 30); do
+                    if curl -f http://localhost:11435 >/dev/null 2>&1; then
+                        echo "✅ Ollama is healthy!"
+                        break
+                    fi
+                    if [ $i -eq 30 ]; then
+                        echo "❌ Ollama health check failed after 150 seconds"
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs ollama | tail -20
+                    fi
+                    sleep 5
+                done
                 
-                # Check services with appropriate timeouts
-                check_service "ollama" "11435" "" 30 || true
-                check_service "backend" "8000" "/health" 40
-                check_service "frontend" "3000" "" 30 || true
-                check_service "prometheus" "9090" "/-/healthy" 20 || true
-                check_service "grafana" "3001" "/api/health" 30 || true
-                check_service "alertmanager" "9093" "/-/healthy" 20 || true
+                echo "Checking backend..."
+                for i in $(seq 1 40); do
+                    if curl -f http://localhost:8000/health >/dev/null 2>&1; then
+                        echo "✅ Backend is healthy!"
+                        break
+                    fi
+                    if [ $i -eq 40 ]; then
+                        echo "❌ Backend health check failed after 200 seconds"
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs backend | tail -20
+                        exit 1
+                    fi
+                    sleep 5
+                done
+                
+                echo "Checking frontend..."
+                for i in $(seq 1 30); do
+                    if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                        echo "✅ Frontend is accessible!"
+                        break
+                    fi
+                    if [ $i -eq 30 ]; then
+                        echo "❌ Frontend health check failed after 150 seconds"
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend | tail -20
+                    fi
+                    sleep 5
+                done
+                
+                echo "Checking prometheus..."
+                for i in $(seq 1 20); do
+                    if curl -f http://localhost:9090/-/healthy >/dev/null 2>&1; then
+                        echo "✅ Prometheus is healthy!"
+                        break
+                    fi
+                    if [ $i -eq 20 ]; then
+                        echo "❌ Prometheus health check failed after 100 seconds"
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus | tail -20
+                    fi
+                    sleep 5
+                done
+                
+                echo "Checking grafana..."
+                for i in $(seq 1 30); do
+                    if curl -f http://localhost:3001/api/health >/dev/null 2>&1; then
+                        echo "✅ Grafana is healthy!"
+                        break
+                    fi
+                    if [ $i -eq 30 ]; then
+                        echo "❌ Grafana health check failed after 150 seconds"
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs grafana | tail -20
+                    fi
+                    sleep 5
+                done
+                
+                echo "Checking alertmanager..."
+                for i in $(seq 1 20); do
+                    if curl -f http://localhost:9093/-/healthy >/dev/null 2>&1; then
+                        echo "✅ Alertmanager is healthy!"
+                        break
+                    fi
+                    if [ $i -eq 20 ]; then
+                        echo "❌ Alertmanager health check failed after 100 seconds"
+                        docker compose -p ${COMPOSE_PROJECT_NAME} logs alertmanager | tail -20
+                    fi
+                    sleep 5
+                done
                 
                 echo "✅ Core services health check completed!"
                 
@@ -192,7 +261,6 @@ pipeline {
                     echo "✅ Backend-Ollama integration working"
                 else
                     echo "❌ Backend-Ollama integration failed"
-                    # Don't exit, continue to gather more diagnostics
                 fi
                 '''
             }
@@ -226,16 +294,11 @@ pipeline {
                     echo "⚠️ Backend metrics not found in Prometheus"
                 fi
                 
-                # Test Grafana with authentication
-                if curl -s -u admin:Tee2001 http://localhost:3001/api/health | grep -q "OK"; then
-                    echo "✅ Grafana is running with authentication"
+                # Test Grafana
+                if curl -s http://localhost:3001/api/health | grep -q "OK"; then
+                    echo "✅ Grafana is running"
                 else
-                    echo "⚠️ Grafana authentication issue - trying without auth"
-                    if curl -s http://localhost:3001/api/health | grep -q "OK"; then
-                        echo "✅ Grafana is running (no auth required)"
-                    else
-                        echo "❌ Grafana not responding"
-                    fi
+                    echo "❌ Grafana not responding"
                 fi
                 
                 # Test alertmanager configuration
@@ -272,7 +335,7 @@ pipeline {
                 echo " Frontend: http://localhost:3000"
                 echo " Backend API: http://localhost:8000"
                 echo " Prometheus: http://localhost:9090"
-                echo " Grafana: http://localhost:3001 (admin/Tee2001)"
+                echo " Grafana: http://localhost:3001"
                 echo " Alertmanager: http://localhost:9093"
                 echo " Jenkins: http://localhost:9190"
                 echo " Ollama: http://localhost:11435"
@@ -352,7 +415,7 @@ pipeline {
                     echo "Frontend: http://localhost:3000"
                     echo "Backend API: http://localhost:8000"
                     echo "Prometheus: http://localhost:9090"
-                    echo "Grafana: http://localhost:3001 (admin/Tee2001)"
+                    echo "Grafana: http://localhost:3001"
                     echo "Alertmanager: http://localhost:9093"
                     echo "Jenkins: http://localhost:9190"
                     echo "Ollama: http://localhost:11435"

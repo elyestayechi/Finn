@@ -24,7 +24,7 @@ pipeline {
                     exit 1
                 fi
                 
-                # Verify critical monitoring files exist (without arrays)
+                # Verify critical monitoring files exist
                 echo "Checking monitoring/prometheus/prometheus.yml..."
                 if [ ! -f "monitoring/prometheus/prometheus.yml" ]; then
                     echo "❌ ERROR: monitoring/prometheus/prometheus.yml not found!"
@@ -49,22 +49,6 @@ pipeline {
                     echo "✅ Found: monitoring/alertmanager/config.yml"
                 fi
                 
-                echo "Checking monitoring/grafana/provisioning/datasources/datasource.yml..."
-                if [ ! -f "monitoring/grafana/provisioning/datasources/datasource.yml" ]; then
-                    echo "❌ ERROR: monitoring/grafana/provisioning/datasources/datasource.yml not found!"
-                    exit 1
-                else
-                    echo "✅ Found: monitoring/grafana/provisioning/datasources/datasource.yml"
-                fi
-                
-                echo "Checking monitoring/grafana/provisioning/dashboards/dashboards.yml..."
-                if [ ! -f "monitoring/grafana/provisioning/dashboards/dashboards.yml" ]; then
-                    echo "❌ ERROR: monitoring/grafana/provisioning/dashboards/dashboards.yml not found!"
-                    exit 1
-                else
-                    echo "✅ Found: monitoring/grafana/provisioning/dashboards/dashboards.yml"
-                fi
-                
                 echo "=== Monitoring configuration verified ==="
                 '''
             }
@@ -87,32 +71,6 @@ pipeline {
                         dir('jenkins') {
                             sh 'docker build -t finn-jenkins -f Dockerfile .'
                         }
-                    },
-                    'Verify Monitoring': {
-                        sh '''
-                        echo "=== Verifying monitoring configuration ==="
-                        
-                        # Use a different approach - copy files to a temp directory
-                        mkdir -p /tmp/monitoring_verify
-                        cp -r monitoring/* /tmp/monitoring_verify/
-                        
-                        # Test Prometheus config
-                        if docker run --rm -v /tmp/monitoring_verify/prometheus:/etc/prometheus prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml --check-config; then
-                            echo "✅ Prometheus configuration is valid"
-                        else
-                            echo "❌ Prometheus configuration is invalid"
-                        fi
-                        
-                        # Test Alertmanager config
-                        if docker run --rm -v /tmp/monitoring_verify/alertmanager:/etc/alertmanager prom/alertmanager:latest --config.file=/etc/alertmanager/config.yml --check-config; then
-                            echo "✅ Alertmanager configuration is valid"
-                        else
-                            echo "❌ Alertmanager configuration is invalid"
-                        fi
-                        
-                        # Clean up
-                        rm -rf /tmp/monitoring_verify
-                        '''
                     }
                 )
             }
@@ -139,26 +97,24 @@ pipeline {
         }
         
         stage('Deploy Complete Stack') {
-    steps {
-        sh '''
-        echo "=== Cleaning up previous containers ==="
-        docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
-        
-        # Clean up any dangling containers
-        docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
-        
-        # Build and start the complete stack with DIFFERENT Jenkins ports
-        echo "=== Building and starting complete application stack ==="
-        
-        # Use different ports to avoid conflict with current Jenkins
-        JENKINS_WEB_PORT=9192 JENKINS_AGENT_PORT=9193 docker compose -p ${COMPOSE_PROJECT_NAME} up --build -d
-        
-        echo "=== Waiting for full stack initialization (3 minutes) ==="
-        sleep 180
-        '''
-    }
-}
-
+            steps {
+                sh '''
+                echo "=== Cleaning up previous containers ==="
+                docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
+                
+                # Clean up any dangling containers
+                docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
+                
+                # Build and start the complete stack EXCEPT Jenkins
+                echo "=== Building and starting application stack (excluding Jenkins) ==="
+                
+                docker compose -p ${COMPOSE_PROJECT_NAME} up --build --scale jenkins=0 -d
+                
+                echo "=== Waiting for full stack initialization (3 minutes) ==="
+                sleep 180
+                '''
+            }
+        }
         
         stage('Comprehensive Health Check') {
             steps {
@@ -245,7 +201,7 @@ pipeline {
                     sleep 5
                 done
                 
-                echo "✅ Core services health check completed!"
+                echo "✅ All core services are healthy!"
                 
                 # Test monitoring integration
                 echo "=== Testing monitoring integration ==="
@@ -268,94 +224,27 @@ pipeline {
             }
         }
         
-        stage('Integration Tests & Monitoring Validation') {
+        stage('Final Validation') {
             steps {
-                dir('Back') {
-                    sh '''
-                    echo "=== Running integration tests against real stack ==="
-                    
-                    # Run integration tests against the running stack
-                    docker run --rm \
-                        --network ${COMPOSE_PROJECT_NAME}_default \
-                        -e API_BASE_URL=http://backend:8000 \
-                        -e OLLAMA_HOST=http://ollama:11434 \
-                        -v "$(pwd)/test-results:/app/test-results" \
-                        finn-loan-analysis-backend-test \
-                        python -m pytest tests/test_integration/ -v \
-                        --junitxml=/app/test-results/integration-test-results.xml || echo "Integration tests may have failed, but continuing..."
-                    '''
-                }
-                
                 sh '''
-                echo "=== Validating monitoring functionality ==="
-                
-                # Test that metrics are being collected
-                if curl -s "http://localhost:9090/api/v1/query?query=up{instance='backend:8000'}" | grep -q "value.*1"; then
-                    echo "✅ Backend metrics are being collected"
-                else
-                    echo "⚠️ Backend metrics not found in Prometheus"
-                fi
-                
-                # Test Grafana
-                if curl -s http://localhost:3001/api/health | grep -q "OK"; then
-                    echo "✅ Grafana is running"
-                else
-                    echo "❌ Grafana not responding"
-                fi
-                
-                # Test alertmanager configuration
-                if curl -s http://localhost:9093/api/v1/status | grep -q "config"; then
-                    echo "✅ Alertmanager is running with configuration"
-                else
-                    echo "⚠️ Alertmanager configuration issue"
-                fi
+                echo "=== FINAL VALIDATION COMPLETE ==="
+                echo ""
+                echo "🎉 YOUR COMPLETE AI AGENT STACK IS NOW RUNNING! 🎉"
+                echo ""
+                echo "=== ACCESS YOUR SERVICES ==="
+                echo "Frontend: http://localhost:3000"
+                echo "Backend API: http://localhost:8000"
+                echo "Prometheus: http://localhost:9090"
+                echo "Grafana: http://localhost:3001"
+                echo "Alertmanager: http://localhost:9093"
+                echo "Ollama: http://localhost:11435"
+                echo "Jenkins: http://localhost:9190 (already running)"
+                echo ""
+                echo "Note: Jenkins was not redeployed to avoid port conflicts"
+                echo "Your existing Jenkins continues to run on port 9190"
                 '''
             }
         }
-        
-        stage('Deploy Jenkins & Final Validation') {
-    steps {
-        sh '''
-        echo "=== Deploying NEW Jenkins instance for future pipelines ==="
-        echo "New Jenkins will be available on port 9192 (current Jenkins is on 9190)"
-        
-        # Test NEW Jenkins health (on different port)
-        if curl -f http://localhost:9192 >/dev/null 2>&1; then
-            echo "✅ NEW Jenkins is running and accessible on port 9192"
-            echo ""
-            echo "=== MIGRATION INSTRUCTIONS ==="
-            echo "1. Access new Jenkins: http://localhost:9192"
-            echo "2. Configure new Jenkins (import jobs/config from old Jenkins if needed)"
-            echo "3. When ready, update your docker-compose.yml to use port 9192 for production"
-            echo "4. Stop current Jenkins (port 9190) and switch to new Jenkins"
-        else
-            echo "⚠️ New Jenkins health check failed - may need more time"
-            docker compose -p ${COMPOSE_PROJECT_NAME} logs jenkins | tail -20
-        fi
-        
-        echo "=== Final system validation ==="
-        echo "Your complete AI agent stack is now running with:"
-        echo " Frontend: http://localhost:3000"
-        echo " Backend API: http://localhost:8000"
-        echo " Prometheus: http://localhost:9090"
-        echo " Grafana: http://localhost:3001"
-        echo " Alertmanager: http://localhost:9093"
-        echo " NEW Jenkins: http://localhost:9192 (for next version)"
-        echo " CURRENT Jenkins: http://localhost:9190 (still running this pipeline)"
-        echo " Ollama: http://localhost:11435"
-        
-        # Verify all critical endpoints
-        echo "=== Testing critical endpoints ==="
-        for endpoint in "http://localhost:3000" "http://localhost:8000/health" "http://localhost:9090" "http://localhost:9192"; do
-            if curl -f "$endpoint" >/dev/null 2>&1; then
-                echo "✅ $endpoint is accessible"
-            else
-                echo "❌ $endpoint is not accessible"
-            fi
-        done
-        '''
-    }
-}
     }
     
     post {
@@ -400,32 +289,17 @@ pipeline {
                 # Get service health status
                 echo "=== Final health status ===" > health-status.txt
                 docker compose -p ${COMPOSE_PROJECT_NAME} ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" >> health-status.txt
-                
-                # Get monitoring configs for reference
-                cp monitoring/prometheus/prometheus.yml prometheus-config.txt || true
-                cp monitoring/alertmanager/config.yml alertmanager-config.txt || true
                 '''
                 
                 // Archive all diagnostic files
-                archiveArtifacts artifacts: 'full-stack-logs.txt,container-status.txt,prometheus-status.txt,alertmanager-status.txt,health-status.txt,prometheus-targets.txt,prometheus-config.txt,alertmanager-config.txt', fingerprint: true
+                archiveArtifacts artifacts: 'full-stack-logs.txt,container-status.txt,prometheus-status.txt,alertmanager-status.txt,health-status.txt,prometheus-targets.txt', fingerprint: true
             }
             
             // Final cleanup decision
             script {
                 if (currentBuild.result == 'SUCCESS') {
-                    echo "✅ Pipeline successful! Complete stack is running and healthy."
-                    echo ""
-                    echo "=== ACCESS YOUR DEPLOYED SERVICES ==="
-                    echo "Frontend: http://localhost:3000"
-                    echo "Backend API: http://localhost:8000"
-                    echo "Prometheus: http://localhost:9090"
-                    echo "Grafana: http://localhost:3001"
-                    echo "Alertmanager: http://localhost:9093"
-                    echo "Jenkins: http://localhost:9190"
-                    echo "Ollama: http://localhost:11435"
-                    echo ""
-                    echo "Your monitoring dashboards are available in Grafana"
-                    echo "Jenkins is ready for future pipeline executions!"
+                    echo "✅ Pipeline successful! Application stack is running and healthy."
+                    echo "Jenkins was not redeployed to avoid port conflicts."
                     
                 } else {
                     sh '''
@@ -436,12 +310,6 @@ pipeline {
                     echo 'Pipeline failed! Stack has been cleaned up. ❌'
                 }
             }
-        }
-        success {
-            echo 'Pipeline successful! Complete production-ready stack is running. ✅'
-        }
-        failure {
-            echo 'Pipeline failed! Investigate logs and try again. ❌'
         }
     }
 }

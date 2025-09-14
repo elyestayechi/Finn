@@ -59,8 +59,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro  
-      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro          
+      - "./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"  # Add quotes
+      - "./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro"          # Add quotes
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -78,7 +78,7 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./monitoring/alertmanager/config.yml:/etc/alertmanager/config.yml:ro      
+      - "./monitoring/alertmanager/config.yml:/etc/alertmanager/config.yml:ro"      # Add quotes
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'

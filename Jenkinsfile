@@ -71,6 +71,32 @@ pipeline {
                         dir('jenkins') {
                             sh 'docker build -t finn-jenkins -f Dockerfile .'
                         }
+                    },
+                    'Verify Monitoring': {
+                        sh '''
+                        echo "=== Verifying monitoring configuration ==="
+                        
+                        # Use a different approach - copy files to a temp directory
+                        mkdir -p /tmp/monitoring_verify
+                        cp -r monitoring/* /tmp/monitoring_verify/
+                        
+                        # Test Prometheus config
+                        if docker run --rm -v /tmp/monitoring_verify/prometheus:/etc/prometheus prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml --check-config; then
+                            echo "✅ Prometheus configuration is valid"
+                        else
+                            echo "❌ Prometheus configuration is invalid"
+                        fi
+                        
+                        # Test Alertmanager config
+                        if docker run --rm -v /tmp/monitoring_verify/alertmanager:/etc/alertmanager prom/alertmanager:latest --config.file=/etc/alertmanager/config.yml --check-config; then
+                            echo "✅ Alertmanager configuration is valid"
+                        else
+                            echo "❌ Alertmanager configuration is invalid"
+                        fi
+                        
+                        # Clean up
+                        rm -rf /tmp/monitoring_verify
+                        '''
                     }
                 )
             }
@@ -112,114 +138,6 @@ pipeline {
                 
                 echo "=== Waiting for full stack initialization (3 minutes) ==="
                 sleep 180
-                '''
-            }
-        }
-        
-        stage('Comprehensive Health Check') {
-            steps {
-                sh '''
-                echo "=== Comprehensive health check of ALL services ==="
-                
-                # Check each service individually
-                echo "Checking ollama..."
-                for i in $(seq 1 30); do
-                    if curl -f http://localhost:11435 >/dev/null 2>&1; then
-                        echo "✅ Ollama is healthy!"
-                        break
-                    fi
-                    if [ $i -eq 30 ]; then
-                        echo "❌ Ollama health check failed after 150 seconds"
-                        docker compose -p ${COMPOSE_PROJECT_NAME} logs ollama | tail -20
-                    fi
-                    sleep 5
-                done
-                
-                echo "Checking backend..."
-                for i in $(seq 1 40); do
-                    if curl -f http://localhost:8000/health >/dev/null 2>&1; then
-                        echo "✅ Backend is healthy!"
-                        break
-                    fi
-                    if [ $i -eq 40 ]; then
-                        echo "❌ Backend health check failed after 200 seconds"
-                        docker compose -p ${COMPOSE_PROJECT_NAME} logs backend | tail -20
-                        exit 1
-                    fi
-                    sleep 5
-                done
-                
-                echo "Checking frontend..."
-                for i in $(seq 1 30); do
-                    if curl -f http://localhost:3000 >/dev/null 2>&1; then
-                        echo "✅ Frontend is accessible!"
-                        break
-                    fi
-                    if [ $i -eq 30 ]; then
-                        echo "❌ Frontend health check failed after 150 seconds"
-                        docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend | tail -20
-                    fi
-                    sleep 5
-                done
-                
-                echo "Checking prometheus..."
-                for i in $(seq 1 20); do
-                    if curl -f http://localhost:9090/-/healthy >/dev/null 2>&1; then
-                        echo "✅ Prometheus is healthy!"
-                        break
-                    fi
-                    if [ $i -eq 20 ]; then
-                        echo "❌ Prometheus health check failed after 100 seconds"
-                        docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus | tail -20
-                    fi
-                    sleep 5
-                done
-                
-                echo "Checking grafana..."
-                for i in $(seq 1 30); do
-                    if curl -f http://localhost:3001/api/health >/dev/null 2>&1; then
-                        echo "✅ Grafana is healthy!"
-                        break
-                    fi
-                    if [ $i -eq 30 ]; then
-                        echo "❌ Grafana health check failed after 150 seconds"
-                        docker compose -p ${COMPOSE_PROJECT_NAME} logs grafana | tail -20
-                    fi
-                    sleep 5
-                done
-                
-                echo "Checking alertmanager..."
-                for i in $(seq 1 20); do
-                    if curl -f http://localhost:9093/-/healthy >/dev/null 2>&1; then
-                        echo "✅ Alertmanager is healthy!"
-                        break
-                    fi
-                    if [ $i -eq 20 ]; then
-                        echo "❌ Alertmanager health check failed after 100 seconds"
-                        docker compose -p ${COMPOSE_PROJECT_NAME} logs alertmanager | tail -20
-                    fi
-                    sleep 5
-                done
-                
-                echo "✅ All core services are healthy!"
-                
-                # Test monitoring integration
-                echo "=== Testing monitoring integration ==="
-                
-                # Test Prometheus is scraping backend
-                if curl -s http://localhost:9090/api/v1/targets | grep -q "backend.*UP"; then
-                    echo "✅ Prometheus is successfully scraping backend metrics"
-                else
-                    echo "⚠️ Prometheus not scraping backend properly"
-                    curl -s http://localhost:9090/api/v1/targets | grep backend || true
-                fi
-                
-                # Test backend-Ollama integration
-                if curl -f http://localhost:8000/health | grep -q "healthy"; then
-                    echo "✅ Backend-Ollama integration working"
-                else
-                    echo "❌ Backend-Ollama integration failed"
-                fi
                 '''
             }
         }

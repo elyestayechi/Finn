@@ -59,7 +59,7 @@ groups:
 
       # HTTP Level Alerts
       - alert: HighHTTPErrorRate
-        expr: sum(rate(request_count_total{http_status=~"5.."}[5m])) / sum(rate(request_count_total[5m])) > 0.05
+        expr: sum(rate(request_count{http_status=~"5.."}[5m])) / sum(rate(request_count[5m])) > 0.05
         for: 5m
         labels:
           severity: warning

@@ -7,52 +7,47 @@ pipeline {
     }
     stages {
         stage('Checkout & Prepare') {
-            steps {
-                git branch: 'main', url: 'https://github.com/elyestayechi/Finn.git'
-                
-                sh '''
-                echo "=== Preparing workspace ==="
-                echo "Workspace: ${WORKSPACE}"
-                
-                # Create test directories
-                mkdir -p Back/test-results Back/coverage
-                chmod 777 Back/test-results Back/coverage
-                
-                # Verify monitoring structure exists
-                if [ ! -d "monitoring" ]; then
-                    echo "❌ ERROR: monitoring directory not found!"
-                    exit 1
-                fi
-                
-                # Verify critical monitoring files exist
-                echo "Checking monitoring/prometheus/prometheus.yml..."
-                if [ ! -f "monitoring/prometheus/prometheus.yml" ]; then
-                    echo "❌ ERROR: monitoring/prometheus/prometheus.yml not found!"
-                    exit 1
-                else
-                    echo "✅ Found: monitoring/prometheus/prometheus.yml"
-                fi
-                
-                echo "Checking monitoring/prometheus/alerts.yml..."
-                if [ ! -f "monitoring/prometheus/alerts.yml" ]; then
-                    echo "❌ ERROR: monitoring/prometheus/alerts.yml not found!"
-                    exit 1
-                else
-                    echo "✅ Found: monitoring/prometheus/alerts.yml"
-                fi
-                
-                echo "Checking monitoring/alertmanager/config.yml..."
-                if [ ! -f "monitoring/alertmanager/config.yml" ]; then
-                    echo "❌ ERROR: monitoring/alertmanager/config.yml not found!"
-                    exit 1
-                else
-                    echo "✅ Found: monitoring/alertmanager/config.yml"
-                fi
-                
-                echo "=== Monitoring configuration verified ==="
-                '''
-            }
-        }
+    steps {
+        git branch: 'main', url: 'https://github.com/elyestayechi/Finn.git'
+        
+        sh '''
+        echo "=== Preparing workspace ==="
+        echo "Workspace: ${WORKSPACE}"
+        
+        # Ensure monitoring directory structure exists
+        if [ -f "create-monitoring-structure.sh" ]; then
+            chmod +x create-monitoring-structure.sh
+            ./create-monitoring-structure.sh
+        else
+            echo "⚠️ create-monitoring-structure.sh not found, creating basic structure manually"
+            mkdir -p monitoring/prometheus monitoring/alertmanager monitoring/grafana/provisioning/datasources monitoring/grafana/provisioning/dashboards
+        fi
+        
+        # Verify critical monitoring files exist
+        echo "Checking monitoring configuration files..."
+        REQUIRED_FILES=(
+            "monitoring/prometheus/prometheus.yml"
+            "monitoring/prometheus/alerts.yml"
+            "monitoring/alertmanager/config.yml"
+        )
+        
+        for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+                echo "❌ ERROR: Required file not found: $file"
+                exit 1
+            else
+                echo "✅ Found: $file"
+            fi
+        done
+        
+        # Create test directories
+        mkdir -p Back/test-results Back/coverage
+        chmod 777 Back/test-results Back/coverage
+        
+        echo "=== Monitoring configuration verified ==="
+        '''
+    }
+}
         
         stage('Build All Images') {
             steps {
@@ -146,84 +141,89 @@ pipeline {
     steps {
         sh '''
         echo "=== Comprehensive health check of ALL services ==="
+
+        # Function to check service health
+        check_service() {
+            local service=$1
+            local check_cmd=$2
+            local max_attempts=$3
+            local attempt=1
+            
+            echo "Checking $service..."
+            while [ $attempt -le $max_attempts ]; do
+                if eval "$check_cmd" >/dev/null 2>&1; then
+                    echo "✅ $service is healthy!"
+                    return 0
+                fi
+                echo "Waiting for $service... (attempt $attempt/$max_attempts)"
+                sleep 5
+                attempt=$((attempt + 1))
+            done
+            
+            echo "❌ $service health check failed after $((max_attempts * 5)) seconds"
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs $service | tail -20
+            return 1
+        }
+
+        # Check services with appropriate timeouts
+        check_service "backend" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health" 30
+        check_service "frontend" "curl -f http://localhost:3000" 30
         
-        # Check services using Docker exec (from within the container network)
-        echo "Checking ollama (internal port 11434)..."
-        for i in $(seq 1 30); do
+        # Check monitoring services
+        check_service "prometheus" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T prometheus curl -f http://localhost:9090/-/healthy" 20
+        check_service "alertmanager" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T alertmanager curl -f http://localhost:9093/-/healthy" 20
+        check_service "grafana" "docker compose -p ${COMPOSE_PROJECT_NAME} exec -T grafana curl -f http://localhost:3000/api/health" 20
+
+        # Ollama might take longer to start
+        echo "Checking ollama (may take several minutes)..."
+        for i in $(seq 1 60); do
             if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T ollama curl -f http://localhost:11434 >/dev/null 2>&1; then
                 echo "✅ Ollama is healthy!"
                 break
             fi
-            if [ $i -eq 30 ]; then
-                echo "❌ Ollama health check failed after 150 seconds"
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs ollama | tail -20
+            if [ $i -eq 60 ]; then
+                echo "⚠️ Ollama is still starting (this is normal for first run)"
+                docker compose -p ${COMPOSE_PROJECT_NAME} logs ollama | tail -10
             fi
             sleep 5
         done
-        
-        echo "Checking backend..."
-        for i in $(seq 1 30); do
-            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health >/dev/null 2>&1; then
-                echo "✅ Backend is healthy!"
-                break
-            fi
-            if [ $i -eq 30 ]; then
-                echo "❌ Backend health check failed after 150 seconds"
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs backend | tail -20
-                exit 1
-            fi
-            sleep 5
-        done
-        
-        echo "Checking frontend..."
-        for i in $(seq 1 30); do
-            if curl -f http://localhost:3000 >/dev/null 2>&1; then
-                echo "✅ Frontend is accessible!"
-                break
-            fi
-            if [ $i -eq 30 ]; then
-                echo "❌ Frontend health check failed after 150 seconds"
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend | tail -20
-            fi
-            sleep 5
-        done
-        
-        echo "Checking prometheus..."
-        for i in $(seq 1 20); do
-            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T prometheus curl -f http://localhost:9090/-/healthy >/dev/null 2>&1; then
-                echo "✅ Prometheus is healthy!"
-                break
-            fi
-            if [ $i -eq 20 ]; then
-                echo "❌ Prometheus health check failed after 100 seconds"
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus | tail -20
-            fi
-            sleep 5
-        done
-        
+
         echo "✅ Core services are healthy!"
-        
+
         # Test monitoring integration
         echo "=== Testing monitoring integration ==="
         
-        # Test Prometheus is scraping backend (from host since port 9090 is exposed)
+        # Wait a bit for Prometheus to start scraping
+        sleep 10
+        
+        # Test Prometheus is scraping backend
         if curl -s http://localhost:9090/api/v1/targets | grep -q "backend.*UP"; then
             echo "✅ Prometheus is successfully scraping backend metrics"
         else
             echo "⚠️ Prometheus not scraping backend properly"
+            echo "Current targets:"
             curl -s http://localhost:9090/api/v1/targets | grep backend || true
+            echo "Trying to debug..."
+            docker compose -p ${COMPOSE_PROJECT_NAME} logs prometheus | tail -10
         fi
         
-        # Test backend-Ollama integration
-        if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health | grep -q "healthy"; then
-            echo "✅ Backend-Ollama integration working"
+        # Test backend metrics endpoint
+        if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/metrics >/dev/null 2>&1; then
+            echo "✅ Backend metrics endpoint is working"
         else
-            echo "❌ Backend-Ollama integration failed"
+            echo "❌ Backend metrics endpoint not accessible"
+        fi
+        
+        # Test backend health
+        if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health | grep -q "healthy"; then
+            echo "✅ Backend health check working"
+        else
+            echo "❌ Backend health check failed"
         fi
         '''
     }
 }
-        
+
         stage('Final Validation') {
             steps {
                 sh '''

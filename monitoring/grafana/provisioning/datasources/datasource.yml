@@ -8,3 +8,6 @@ datasources:
     isDefault: true
     version: 1
     editable: false
+    jsonData:
+      timeInterval: 15s
+      httpMethod: GET

@@ -22,9 +22,11 @@ RUN mkdir -p Data/logs PDF\ Loans
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=30s --start-period=90s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Set Python path and start command
 ENV PYTHONPATH=/app
-CMD python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
+
+# Create startup script that runs migration then starts the app
+CMD ["sh", "-c", "python migrate_data.py && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2"]

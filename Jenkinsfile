@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_HOST = 'unix:///var/run/docker.sock'
-        COMPOSE_PROJECT_NAME = "Finn-Pipeline-${BUILD_ID}"
+        COMPOSE_PROJECT_NAME = "finn-pipeline-${BUILD_ID}"
         WORKSPACE = pwd()
     }
     stages {

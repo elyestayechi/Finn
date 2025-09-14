@@ -125,32 +125,32 @@ pipeline {
             }
         }
         
-        stage('Deploy Complete Stack') {
-    steps {
-        sh '''
-        echo "=== Cleaning up previous containers ==="
-        # Force stop and remove any containers using our ports
-        docker compose -p ${COMPOSE_PROJECT_NAME} down -v --remove-orphans 2>/dev/null || true
+        stage('Deploy') {
+            steps {
+                sh '''
+                echo "=== NETTOYAGE COMPLET DES CONTENEURS ==="
+                docker compose -p ${COMPOSE_PROJECT_NAME} down 2>/dev/null || true
+                
+                PORTS="8000 3000 11434 11435 9090 3001 9093"
+                for port in $PORTS; do
+                    echo "Nettoyage du port $port"
+                    CONTAINERS=$(docker ps -q --filter "publish=$port")
+                    if [ ! -z "$CONTAINERS" ]; then
+                        echo "Arrêt des conteneurs utilisant le port $port: $CONTAINERS"
+                        docker stop $CONTAINERS 2>/dev/null || true
+                        docker rm $CONTAINERS 2>/dev/null || true
+                    fi
+                done
+                
+                docker network prune -f 2>/dev/null || true
+                echo "=== NETTOYAGE TERMINÉ ==="
+                '''
+                
+                sh 'docker compose -p ${COMPOSE_PROJECT_NAME} up --no-build --scale jenkins=0 -d'
+                sleep(time: 60, unit: 'SECONDS')
+            }
+        }
         
-        # Clean up any dangling containers
-        docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}" | xargs docker rm -f 2>/dev/null || true
-        
-        # Kill any processes using our ports
-        for port in 8000 3000 9090 9093 3001 11435; do
-            echo "Checking port $port..."
-            lsof -ti:$port | xargs kill -9 2>/dev/null || true
-        done
-        
-        # Build and start the complete stack EXCEPT Jenkins
-        echo "=== Building and starting application stack (excluding Jenkins) ==="
-        
-        docker compose -p ${COMPOSE_PROJECT_NAME} up --build --scale jenkins=0 -d
-        
-        echo "=== Waiting for full stack initialization (3 minutes) ==="
-        sleep 180
-        '''
-    }
-}
         stage('Comprehensive Health Check') {
     steps {
         sh '''

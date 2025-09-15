@@ -87,37 +87,54 @@ pipeline {
         }
         
         stage('Health Check') {
-            steps {
-                sh '''
-                echo "=== Health Check ==="
-                
-                # Check backend
-                if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health; then
-                    echo "✅ Backend is healthy"
-                else
-                    echo "❌ Backend health check failed"
+    steps {
+        sh '''
+        echo "=== Health Check ==="
+        sleep 30  # Give services more time to start
+        
+        # Check backend with retries
+        for i in {1..5}; do
+            if docker compose -p ${COMPOSE_PROJECT_NAME} exec -T backend curl -f http://localhost:8000/health; then
+                echo "✅ Backend is healthy"
+                break
+            else
+                echo "⚠️ Backend health check attempt $i/5 failed, retrying..."
+                if [ $i -eq 5 ]; then
+                    echo "❌ Backend health check failed after 5 attempts"
                     docker compose -p ${COMPOSE_PROJECT_NAME} logs backend
                     exit 1
                 fi
-                
-                # Check frontend
-                if curl -f http://localhost:3000 >/dev/null 2>&1; then
-                    echo "✅ Frontend is accessible"
-                else
-                    echo "⚠️ Frontend may not be fully ready"
-                fi
-                
-                # Check monitoring services
-                if docker compose -p ${COMPOSE_PROJECT_NAME} ps | grep -q "Up"; then
-                    echo "✅ All services are running"
-                else
-                    echo "❌ Some services failed to start"
-                    docker compose -p ${COMPOSE_PROJECT_NAME} ps
+                sleep 10
+            fi
+        done
+        
+        # Check frontend with retries
+        for i in {1..5}; do
+            if curl -f http://localhost:3000 >/dev/null 2>&1; then
+                echo "✅ Frontend is accessible"
+                break
+            else
+                echo "⚠️ Frontend check attempt $i/5 failed, retrying..."
+                if [ $i -eq 5 ]; then
+                    echo "❌ Frontend check failed after 5 attempts"
+                    docker compose -p ${COMPOSE_PROJECT_NAME} logs frontend
                     exit 1
                 fi
-                '''
-            }
-        }
+                sleep 10
+            fi
+        done
+        
+        # Check if services are running
+        if docker compose -p ${COMPOSE_PROJECT_NAME} ps | grep -q "Up"; then
+            echo "✅ All services are running"
+        else
+            echo "❌ Some services failed to start"
+            docker compose -p ${COMPOSE_PROJECT_NAME} ps
+            exit 1
+        fi
+        '''
+    }
+}
         
         stage('Verify Monitoring') {
             steps {
@@ -145,28 +162,16 @@ pipeline {
     }
     
     post {
-        always {
-            script {
-                // Archive test results
-                junit 'Back/test-results/*.xml'
-                
-                // Capture logs
-                sh '''
-                docker compose -p ${COMPOSE_PROJECT_NAME} logs --no-color --tail=200 > deployment-logs.txt
-                docker compose -p ${COMPOSE_PROJECT_NAME} ps > container-status.txt
-                '''
-                
-                archiveArtifacts artifacts: 'deployment-logs.txt,container-status.txt', fingerprint: true
-                
-                // Cleanup on failure
-                if (currentBuild.result != 'SUCCESS') {
-                    sh '''
-                    echo "=== Cleaning up failed deployment ==="
-                    docker compose -p ${COMPOSE_PROJECT_NAME} down -v 2>/dev/null || true
-                    '''
-                }
-            }
+    always {
+        script {
+            // Archive test results - fix the path
+            junit 'Back/test-results/test-results.xml'
+            
+            // Also archive coverage if available
+            archiveArtifacts artifacts: 'Back/coverage/coverage.xml', fingerprint: true
         }
+    }
+
         
         success {
             sh '''

@@ -59,8 +59,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml  # Individual file
-      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml          # Individual file
+      - ./monitoring/prometheus:/etc/prometheus  # Mount the entire directory
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -78,14 +77,13 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./monitoring/alertmanager/config.yml:/etc/alertmanager/config.yml      # Individual file
+      - ./monitoring/alertmanager:/etc/alertmanager  # Mount the entire directory
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
     restart: unless-stopped
     depends_on:
       - prometheus
-
 
   grafana:
     image: grafana/grafana:latest

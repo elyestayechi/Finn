@@ -15,8 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p Data/logs PDF\ Loans
+# Create necessary directories (without spaces)
+RUN mkdir -p Data/logs PDF Loans
 
 # Expose port
 EXPOSE 8000
@@ -25,8 +25,22 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=90s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Set Python path and start command
+# Set Python path
 ENV PYTHONPATH=/app
 
-# Create startup script that runs migration then starts the app
-CMD ["sh", "-c", " python migrate_data.py || echo 'Migration failed or already completed'; python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2 "]
+# Create startup script that handles migration more robustly
+CMD sh -c 'for i in {1..5}; do \
+    echo "Attempt $i: Running database migration..."; \
+    if python migrate_data.py; then \
+      echo "Migration completed successfully"; \
+      break; \
+    else \
+      echo "Migration failed or already completed, attempt $i/5"; \
+      if [ $i -eq 5 ]; then \
+        echo "All migration attempts failed, continuing anyway..."; \
+      fi; \
+      sleep 5; \
+    fi; \
+  done; \
+  echo "Starting FastAPI server..."; \
+  python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2'
